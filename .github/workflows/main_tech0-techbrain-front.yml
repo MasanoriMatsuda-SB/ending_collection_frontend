@@ -13,30 +13,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
+          cache: 'npm'
 
-      - name: npm install, build, and test
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Type Check
+        run: npm run type-check --if-present  # TypeScriptの型チェック
+
+      - name: Build Next.js App
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # クライアントサイドの環境変数があれば追加
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          # その他の必要な環境変数...
+
+      - name: Run tests
+        run: npm run test --if-present
+
+      - name: Prepare and Zip Artifact
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          mkdir -p deploy
+          cp -r . deploy/
+          cd deploy
+          zip -r ../release.zip .
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
-      - name: Upload artifact for deployment job
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: release.zip
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,15 +63,15 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
+      - name: Unzip artifact
         run: unzip release.zip
       
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
