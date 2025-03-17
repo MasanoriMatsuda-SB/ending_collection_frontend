@@ -10,14 +10,15 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
+    setIsLoading(true);
 
     try {
+      // 会員登録リクエスト
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,15 +33,38 @@ export default function RegisterPage() {
             : data.detail.toString()
           : '登録に失敗しました';
         setError(errorMessage);
+        setIsLoading(false);
         return;
       }
 
-      await res.json();
-      setSuccess('登録に成功しました。ログインページに移動します。');
-      setTimeout(() => router.push('/login'), 1500);
+      // 登録が成功したら、同じ認証情報でログインリクエストを送る
+      const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!loginRes.ok) {
+        const loginData = await loginRes.json();
+        const errorMessage = loginData.detail
+          ? typeof loginData.detail === 'string'
+            ? loginData.detail
+            : Array.isArray(loginData.detail)
+            ? loginData.detail.map((err: { msg: string }) => err.msg).join(', ')
+            : loginData.detail.toString()
+          : 'ログインに失敗しました';
+        setError(errorMessage);
+        setIsLoading(false);
+        return;
+      }
+
+      const loginData = await loginRes.json();
+      localStorage.setItem('token', loginData.access_token);
+      router.push('/');
     } catch (err: unknown) {
-      console.error('Registration error:', err);
+      console.error('Registration/Login error:', err);
       setError('エラーが発生しました');
+      setIsLoading(false);
     }
   };
 
@@ -48,7 +72,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded shadow">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">会員登録</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleRegistration} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-900">ユーザー名</label>
             <input
@@ -81,13 +105,17 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            disabled={isLoading}
+            className={`w-full py-2 px-4 rounded transition ${
+              isLoading
+                ? 'bg-blue-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
           >
-            登録する
+            {isLoading ? '登録中…' : '登録する'}
           </button>
         </form>
         {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
-        {success && <p className="mt-4 text-center text-green-500 text-sm">{success}</p>}
       </div>
     </div>
   );

@@ -9,10 +9,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
@@ -31,6 +33,7 @@ export default function LoginPage() {
             : data.detail.toString()
           : 'ログインに失敗しました';
         setError(errorMessage);
+        setIsLoading(false);
         return;
       }
 
@@ -40,6 +43,7 @@ export default function LoginPage() {
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError('エラーが発生しました');
+      setIsLoading(false);
     }
   };
 
@@ -70,9 +74,14 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-green-600 text-white rounded hover:bg-green-700 transition"
+            disabled={isLoading}
+            className={`w-full py-2 px-4 rounded transition ${
+              isLoading
+                ? 'bg-green-400 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
           >
-            ログイン
+            {isLoading ? 'ログイン中…' : 'ログイン'}
           </button>
         </form>
         {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
