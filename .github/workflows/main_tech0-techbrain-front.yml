@@ -28,25 +28,21 @@ jobs:
         run: npm install
 
       - name: Type Check
-        run: npm run type-check --if-present  # TypeScriptの型チェック
+        run: npm run type-check --if-present
 
       - name: Build Next.js App
         run: npm run build
         env:
           NODE_ENV: production
-          # クライアントサイドの環境変数があれば追加
+          # 必要な環境変数があれば追加
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          # その他の必要な環境変数...
 
       - name: Run tests
         run: npm run test --if-present
 
+      # ここを修正
       - name: Prepare and Zip Artifact
-        run: |
-          mkdir -p deploy
-          cp -r . deploy/
-          cd deploy
-          zip -r ../release.zip .
+        run: zip -r release.zip . -x "*.git*"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
