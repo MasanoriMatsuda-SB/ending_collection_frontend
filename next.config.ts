@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'standalone',  // デプロイに必要な設定を追加
 };
 
 export default nextConfig;
