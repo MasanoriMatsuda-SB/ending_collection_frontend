@@ -27,7 +27,7 @@ export default function LoginPage() {
           ? typeof data.detail === 'string'
             ? data.detail
             : Array.isArray(data.detail)
-            ? data.detail.map((err: any) => err.msg).join(', ')
+            ? data.detail.map((err: { msg: string }) => err.msg).join(', ')
             : data.detail.toString()
           : 'ログインに失敗しました';
         setError(errorMessage);
@@ -37,7 +37,8 @@ export default function LoginPage() {
       const data = await res.json();
       localStorage.setItem('token', data.access_token);
       router.push('/');
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('Login error:', err);
       setError('エラーが発生しました');
     }
   };
@@ -45,14 +46,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">
-          ログイン
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">ログイン</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-900">
-              メールアドレス
-            </label>
+            <label className="block text-sm font-medium text-gray-900">メールアドレス</label>
             <input
               type="email"
               value={email}
@@ -62,9 +59,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-900">
-              パスワード
-            </label>
+            <label className="block text-sm font-medium text-gray-900">パスワード</label>
             <input
               type="password"
               value={password}
@@ -80,9 +75,7 @@ export default function LoginPage() {
             ログイン
           </button>
         </form>
-        {error && (
-          <p className="mt-4 text-center text-red-500 text-sm">{error}</p>
-        )}
+        {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
       </div>
     </div>
   );

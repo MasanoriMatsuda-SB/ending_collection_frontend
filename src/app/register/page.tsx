@@ -28,7 +28,7 @@ export default function RegisterPage() {
         const data = await res.json();
         const errorMessage = data.detail
           ? Array.isArray(data.detail)
-            ? data.detail.map((err: any) => err.msg).join(', ')
+            ? data.detail.map((err: { msg: string }) => err.msg).join(', ')
             : data.detail.toString()
           : '登録に失敗しました';
         setError(errorMessage);
@@ -38,7 +38,8 @@ export default function RegisterPage() {
       await res.json();
       setSuccess('登録に成功しました。ログインページに移動します。');
       setTimeout(() => router.push('/login'), 1500);
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('Registration error:', err);
       setError('エラーが発生しました');
     }
   };
@@ -46,14 +47,10 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded shadow">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">
-          会員登録
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">会員登録</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-900">
-              ユーザー名
-            </label>
+            <label className="block text-sm font-medium text-gray-900">ユーザー名</label>
             <input
               type="text"
               value={username}
@@ -63,9 +60,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-900">
-              メールアドレス
-            </label>
+            <label className="block text-sm font-medium text-gray-900">メールアドレス</label>
             <input
               type="email"
               value={email}
@@ -75,9 +70,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-900">
-              パスワード
-            </label>
+            <label className="block text-sm font-medium text-gray-900">パスワード</label>
             <input
               type="password"
               value={password}
@@ -93,12 +86,8 @@ export default function RegisterPage() {
             登録する
           </button>
         </form>
-        {error && (
-          <p className="mt-4 text-center text-red-500 text-sm">{error}</p>
-        )}
-        {success && (
-          <p className="mt-4 text-center text-green-500 text-sm">{success}</p>
-        )}
+        {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
+        {success && <p className="mt-4 text-center text-green-500 text-sm">{success}</p>}
       </div>
     </div>
   );
