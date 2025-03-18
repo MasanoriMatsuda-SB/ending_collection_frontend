@@ -1,10 +1,10 @@
-// src/app/register/page.tsx
+// src/app/signup/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function RegisterPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -18,8 +18,8 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // 会員登録リクエスト
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+      // 会員登録（signup）リクエスト
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
@@ -37,7 +37,7 @@ export default function RegisterPage() {
         return;
       }
 
-      // 登録が成功したら、同じ認証情報でログインリクエストを送る
+      // 登録が成功したら自動ログイン
       const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

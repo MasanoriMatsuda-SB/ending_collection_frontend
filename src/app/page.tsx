@@ -33,7 +33,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-4xl font-bold mb-4 text-gray-900">Ending Collection</h1>
+      <h1 className="text-4xl font-bold mb-4 text-gray-900">meme mori</h1>
       {username ? (
         <>
           <p className="text-xl mb-8 text-gray-900">ようこそ、{username}さん</p>
@@ -68,7 +68,7 @@ export default function HomePage() {
               ログイン
             </Link>
             <Link
-              href="/register"
+              href="/signup"
               className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             >
               会員登録
