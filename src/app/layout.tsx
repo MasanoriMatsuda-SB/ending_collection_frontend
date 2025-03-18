@@ -10,12 +10,12 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        <title>Ending Collection Frontend</title>
+        <title>meme mori</title>
       </head>
       <body>
-        <nav>
+        <nav className="p-4 bg-gray-200">
           <Link href="/">Home</Link> |{' '}
-          <Link href="/register">Register</Link> |{' '}
+          <Link href="/signup">Signup</Link> |{' '}
           <Link href="/login">Login</Link>
         </nav>
         <main>{children}</main>
