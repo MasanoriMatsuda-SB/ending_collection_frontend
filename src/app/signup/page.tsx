@@ -9,8 +9,17 @@ export default function SignupPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setPhoto(e.target.files[0]);
+    } else {
+      setPhoto(null);
+    }
+  };
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +27,19 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // 会員登録（signup）リクエスト
+      // FormDataに必要な情報を追加
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('email', email);
+      formData.append('password', password);
+      if (photo) {
+        formData.append('photo', photo);
+      }
+
+      // /signup エンドポイントへ送信
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/signup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -37,7 +54,7 @@ export default function SignupPage() {
         return;
       }
 
-      // 登録が成功したら自動ログイン
+      // 登録成功後、自動ログイン
       const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,6 +118,15 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-900">アイコン（任意）</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full mt-1"
             />
           </div>
           <button
