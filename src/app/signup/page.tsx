@@ -27,7 +27,6 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // FormDataに必要な情報を追加
       const formData = new FormData();
       formData.append('username', username);
       formData.append('email', email);
@@ -36,7 +35,6 @@ export default function SignupPage() {
         formData.append('photo', photo);
       }
 
-      // /signup エンドポイントへ送信
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/signup`, {
         method: 'POST',
         body: formData,
@@ -54,7 +52,7 @@ export default function SignupPage() {
         return;
       }
 
-      // 登録成功後、自動ログイン
+      // 自動ログイン処理
       const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,12 +120,20 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-900">アイコン（任意）</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full mt-1"
-            />
+            <div className="mt-1">
+              <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-900 bg-white hover:bg-gray-50">
+                ファイルを選択
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="sr-only"
+                />
+              </label>
+              {photo && (
+                <span className="ml-2 text-gray-700">{photo.name}</span>
+              )}
+            </div>
           </div>
           <button
             type="submit"
