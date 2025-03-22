@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react"; // 認証してる場合
+// import { useSession } from "next-auth/react"; // 認証してる場合
 import Image from "next/image";
 
 interface Message {
