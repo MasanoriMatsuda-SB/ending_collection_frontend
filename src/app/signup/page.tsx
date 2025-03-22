@@ -23,6 +23,11 @@ export default function SignupPage() {
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('正しいメールアドレスの形式で入力してください');
+      return;
+    }
     setError('');
     setIsLoading(true);
 
