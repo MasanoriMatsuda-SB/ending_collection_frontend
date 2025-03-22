@@ -3,7 +3,13 @@ import { useState } from "react";
 // import ItemDetail from "@/components/ItemDetail";
 import ItemChat from "@/components/ItemChat";
 
-export default function ItemPage({ params }: { params: { id: string } }) {
+type Props = {
+    params: {
+      id: string;
+    };
+  };
+
+export default function ItemPage({ params }: Props) {
   const [tab, setTab] = useState<"detail" | "chat">("detail");
 
   return (
