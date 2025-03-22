@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 // import { useSession } from "next-auth/react"; // 認証してる場合
-import Image from "next/image";
+// import Image from "next/image";
 
 interface Message {
   message_id: number;
@@ -50,7 +50,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
       <div className="flex-1 overflow-y-auto space-y-2">
         ===開発テスト用(start)===<br/>
         {itemId}<br/>
-        "===開発テスト用(End)===
+        &quot;===開発テスト用(End)===&quot;
       </div>
       <div className="flex-1 overflow-y-auto space-y-2">
         {messages.map((msg) => (
