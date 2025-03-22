@@ -1,9 +1,9 @@
-// src/app/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Link from 'next/link';
+import Button from "@/components/button";
 
 interface JwtPayload {
   sub: string;
@@ -71,22 +71,10 @@ export default function HomePage() {
       ) : (
         <>
           <p className="text-xl mb-8 text-gray-900">
-            ログインをお願いいたします。初めてのご利用の場合は会員登録をお願いいたします。
+            終活アルバムアプリ
           </p>
-          <div className="flex space-x-4">
-            <Link
-              href="/login"
-              className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-            >
-              ログイン
-            </Link>
-            <Link
-              href="/signup"
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-              会員登録
-            </Link>
-          </div>
+          <Button title="新規アカウント作成" href="/signup" variant="main" />
+          <Button title="ログイン" href="/login" variant="sub" />
         </>
       )}
     </div>

@@ -13,7 +13,7 @@ export default function RootLayout({
         <title>meme mori</title>
       </head>
       <body>
-        <nav className="p-4 bg-gray-200 text-black">
+        <nav className="p-4 bg-gray-100 text-black">
           <Link href="/">Home</Link> |{' '}
           <Link href="/login">Login</Link> |{' '}
           <Link href="/signup">Signup</Link> |{' '}
@@ -23,7 +23,11 @@ export default function RootLayout({
           <Link href="/invite">Invite</Link> |{' '}
           <Link href="/invitation">Invitation</Link>
         </nav>
-        <main>{children}</main>
+        <div className="bg-white lg:bg-yellow-50 text-[#212121]">
+          <div className="max-w-[744px] mx-auto px-4">
+            <main>{children}</main>
+          </div>
+        </div>
       </body>
     </html>
   );
