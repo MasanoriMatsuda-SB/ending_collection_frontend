@@ -6,14 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "type-check":"tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "lint": "next lint"
   },
   "dependencies": {
     "jwt-decode": "^4.0.0",
     "next": "15.2.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
