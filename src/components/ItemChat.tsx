@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 // import { useSession } from "next-auth/react"; // 認証してる場合
-// import Image from "next/image";
+import io from "socket.io-client";
 
 interface Message {
   message_id: number;
@@ -16,6 +16,11 @@ interface Message {
 interface ItemChatProps {
   itemId: string;    // page.tsxから渡される item_id
 }
+
+const socket = io(process.env.NEXT_PUBLIC_API_URL || "", {
+    transports: ["websocket"],
+  });
+  
 
 export default function ItemChat({ itemId }: ItemChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -48,6 +53,16 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     fetchMessages();
   }, [itemId]);
 
+  useEffect(() => {
+    socket.on("receive_message", (msg: Message) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => {
+      socket.off("receive_message");
+    };
+  }, []);
+
 // メッセージが更新されたら自動スクロール
 useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -72,9 +87,8 @@ useEffect(() => {
     });
 
     const newMessage = await res.json();
-    setMessages((prev) => [...prev, newMessage]);
+    socket.emit("send_message", newMessage);
     setInput("");
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
