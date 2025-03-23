@@ -48,15 +48,27 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     fetchMessages();
   }, [itemId]);
 
+// メッセージが更新されたら自動スクロール
+useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
 
-  
+// メッセージ送信
   const sendMessage = async () => {
     if (!input.trim()) return;
+
+    const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
+    const thread = await threadRes.json();
+    if (!thread.thread_id) return;
 
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ item_id: itemId, content: input }),
+      body: JSON.stringify({
+        thread_id: thread.thread_id,
+        user_id: currentUserId,
+        content: input
+      }),
     });
 
     const newMessage = await res.json();
@@ -67,38 +79,45 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {messages.map((msg) => (
-          <div
-            key={msg.message_id}
-            className={`flex ${
-              msg.user_id === currentUserId ? "justify-end" : "justify-start"
-            }`}
-          >
-            {/* アイコン表示 */}
-            {msg.user_id !== currentUserId && msg.photoURL && (
-              <img
-                src={msg.photoURL}
-                alt="user"
-                className="w-6 h-6 rounded-full mr-2 self-end"
-              />
-            )}
+    <div className="flex-1 overflow-y-auto space-y-2">
+        {messages.map((msg) => {
+        const isCurrentUser = msg.user_id === currentUserId;
+        return (
             <div
-              className={`max-w-xs px-4 py-2 rounded-xl text-sm shadow ${
-                msg.user_id === currentUserId
-                  ? "bg-blue-100 text-right"
-                  : "bg-gray-200 text-left"
-              }`}
+            key={msg.message_id}
+            className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
             >
-              <p>{msg.content}</p>
-              <p className="text-[10px] text-gray-500 mt-1">
-                {msg.username} ・ {new Date(msg.created_at).toLocaleString()}
-              </p>
+            <div className={`flex items-end space-x-2 ${isCurrentUser ? "flex-row-reverse" : ""}`}>
+                
+                {/* ユーザーアイコン */}
+                {msg.photoURL && (
+                <img
+                    src={msg.photoURL}
+                    alt="user"
+                    width={32}
+                    height={32}
+                    className="rounded-full w-8 h-8 object-cover"
+                />
+                )}
+
+                <div
+                className={`max-w-xs px-4 py-2 rounded-xl text-sm shadow text-left ${
+                    isCurrentUser ? "bg-blue-100" : "bg-gray-200"
+                }`}
+                >
+                <p className="text-left">{msg.content}</p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                    {msg.username} ・ {new Date(msg.created_at).toLocaleTimeString()}
+                </p>
+                </div>
             </div>
-          </div>
-        ))}
+            </div>
+        );
+        })}
         <div ref={bottomRef} />
-      </div>
+    </div>
+
+
 
       {/* メッセージ入力 */}
       <div className="mt-4 flex items-center border-t pt-2">
