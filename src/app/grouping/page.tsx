@@ -1,32 +1,14 @@
 // app/grouping/page.tsx
 'use client';
-import { useEffect , useState } from 'react';
+import { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
 import Button from "@/components/Button";
 
-interface JwtPayload {
-    sub: string;
-    exp: number;
-    iat: number;
-  }
-
 export default function GroupingPage() {
-  const [username, setUsername] = useState<string | null>(null);
-  const [groupName, setGroupName] = useState('');
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<JwtPayload>(token);
-        setUsername(decoded.sub);
-      } catch (error) {
-        console.error('JWT decode error:', error);
-      }
-    }
-  }, []);
+    const { user } = useAuth();
+    const [groupName, setGroupName] = useState('');
+    const router = useRouter();
 
   const handleCreateGroup = async () => {
     try {
@@ -50,10 +32,11 @@ export default function GroupingPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
-    {username ? (
+    {user?.sub ? (
     <>
         <h1 className="text-2xl font-bold text-center mb-6">グループ作成</h1>
-        <div className="w-full max-w-md mb-6">
+        <div className="w-full max-w-md">
+            <form onSubmit={(e) => { e.preventDefault(); handleCreateGroup(); }}>
             <label className="block text-sm font-medium text-gray-900">グループ名</label>
             <input
               type="text"
@@ -63,13 +46,13 @@ export default function GroupingPage() {
               
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded text-gray-900 focus:outline-none focus:ring-[#17B5B5] focus:border-[#17B5B5]"
             />
+            </form>
         </div>
       <Button
         title="グループ作成"
         type="submit"
         variant="main"
         onClick={handleCreateGroup}
-        
       />
     </>
     ) : (
