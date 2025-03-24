@@ -33,7 +33,7 @@ const Button = ({
   const isMain = variant === "main";
 
   const baseStyle =
-    "w-full max-w-[330px] h-[52px] rounded-full font-bold text-center shadow transition-all duration-300 my-3";
+    "w-full max-w-md h-[52px] rounded-full font-bold text-center shadow transition-all duration-300 my-3";
 
   const mainStyle = {
     backgroundColor: "#7B6224",
