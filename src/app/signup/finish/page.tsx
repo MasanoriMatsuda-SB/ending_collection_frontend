@@ -37,7 +37,6 @@ export default function HomePage() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
         {username ? (
           <>
-            {/* <img src="/check-icon.png" alt="check" className="w-14 h-14 mb-4" /> */}
             <h1 className="text-2xl font-bold text-center mb-6">アカウントが作成されました</h1>
             <img
               src={photoURL || "/face-icon.svg"}
