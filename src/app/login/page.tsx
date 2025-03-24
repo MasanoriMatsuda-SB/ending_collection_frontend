@@ -1,8 +1,8 @@
-// src/app/login/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,8 +53,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md p-8 bg-white rounded shadow">
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-full max-w-md p-8 bg-gray rounded shadow">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">ログイン</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -80,16 +80,21 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2 px-4 rounded transition ${
+            className={`w-full py-3 px-4 rounded-full text-white font-bold transition ${
               isLoading
-                ? 'bg-green-400 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
+                ? 'bg-[#A8956F] cursor-not-allowed'
+                : 'bg-[#7B6224] hover:bg-[#A8956F]'
             }`}
           >
             {isLoading ? 'ログイン中…' : 'ログイン'}
           </button>
         </form>
         {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
+        <div className="mt-4 text-center">
+          <Link href="/signup" className="text-[#7B6224] font-semibold hover:text-[#A8956F]">
+            新規アカウント作成はこちら
+          </Link>
+        </div>
       </div>
     </div>
   );

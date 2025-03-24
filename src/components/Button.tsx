@@ -1,15 +1,3 @@
-// ボタンを使いたいページではまず以下でボタンコンポーネントをimportする
-// import Button from "@/components/button";
-// ボタンコンポーネントの書き方
-// メインボタンでonClickの場合：<Button
-//   title="送信する"
-//   variant="main"
-//   onClick={() => {
-//     console.log("送信ボタンが押されました！");
-//   }}
-// />
-// サブボタンでhref遷移の場合：<Button title="ログイン" href="/login" variant="sub" />
-
 "use client";
 
 import React from "react";
@@ -21,6 +9,7 @@ type ButtonProps = {
   variant?: "main" | "sub";
   activeScale?: number;
   onClick?: () => void;
+  type?: "button" | "submit";
 };
 
 const Button = ({
@@ -28,7 +17,8 @@ const Button = ({
   href = "/",
   variant = "main",
   activeScale = 0.95,
-  onClick
+  onClick,
+  type = "button"
 }: ButtonProps) => {
   const router = useRouter();
 
@@ -43,7 +33,7 @@ const Button = ({
   const isMain = variant === "main";
 
   const baseStyle =
-    "w-[calc(100%-40px)] max-w-[400px] h-[52px] mx-auto block rounded-full font-bold text-center shadow transition-all duration-300 my-5";
+    "w-full max-w-[330px] h-[52px] rounded-full font-bold text-center shadow transition-all duration-300 my-3";
 
   const mainStyle = {
     backgroundColor: "#7B6224",
@@ -62,6 +52,7 @@ const Button = ({
 
   return (
     <button
+      type={type}
       onClick={handleClick}
       className={baseStyle}
       style={isMain ? mainStyle : subStyle}

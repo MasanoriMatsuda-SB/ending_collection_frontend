@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function SignupPage() {
 
       const loginData = await loginRes.json();
       localStorage.setItem('token', loginData.access_token);
-      router.push('/');
+      router.push('/signup/finish');
     } catch (err: unknown) {
       console.error('Registration/Login error:', err);
       setError('エラーが発生しました');
@@ -89,8 +90,8 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md p-8 bg-white rounded shadow">
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-full max-w-md p-8 bg-gray rounded shadow">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">会員登録</h2>
         <form onSubmit={handleRegistration} className="space-y-6">
           <div>
@@ -143,16 +144,21 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-2 px-4 rounded transition ${
+            className={`w-full py-3 px-4 rounded-full text-white font-bold transition ${
               isLoading
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-[#A8956F] cursor-not-allowed'
+                : 'bg-[#7B6224] hover:bg-[#A8956F]'
             }`}
           >
             {isLoading ? '登録中…' : '登録する'}
           </button>
         </form>
         {error && <p className="mt-4 text-center text-red-500 text-sm">{error}</p>}
+        <div className="mt-4 text-center">
+            <Link href="/login" className="text-[#7B6224] font-semibold hover:text-[#A8956F]">
+            ログインはこちら
+            </Link>
+          </div>
       </div>
     </div>
   );

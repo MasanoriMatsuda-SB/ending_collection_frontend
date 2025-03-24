@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import Link from 'next/link';
-import Button from "@/components/button";
+import Button from "@/components/Button";
 
 interface JwtPayload {
   sub: string;
@@ -36,7 +35,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
       <div className="flex items-center space-x-4">
         <h1 className="text-4xl font-bold text-gray-900">meme mori</h1>
         {photoURL && (
@@ -73,6 +72,11 @@ export default function HomePage() {
           <p className="text-xl mb-8 text-gray-900">
             終活アルバムアプリ
           </p>
+          <img
+            src="/cover.png"
+            alt="Cover Icon"
+            className="mx-auto mb-6 h-[200px]"
+          />
           <Button title="新規アカウント作成" href="/signup" variant="main" />
           <Button title="ログイン" href="/login" variant="sub" />
         </>
