@@ -32,6 +32,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [attachmentsMap, setAttachmentsMap] = useState<Record<number, Attachment[]>>({});
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = 14;    //暫定対応
@@ -84,38 +85,45 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() && !file) return;
+    if (isSending || (!input.trim() && !file)) return;
+    setIsSending(true);
 
-    const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
-    const thread = await threadRes.json();
-    if (!thread.thread_id) return;
+    try {
+      const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
+      const thread = await threadRes.json();
+      if (!thread.thread_id) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        thread_id: thread.thread_id,
-        user_id: currentUserId,
-        content: input,
-      }),
-    });
-
-    const newMessage = await res.json();
-
-    if (file) {
-      const formData = new FormData();
-      formData.append("message_id", String(newMessage.message_id));
-      formData.append("file", file);
-
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message_attachments`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          thread_id: thread.thread_id,
+          user_id: currentUserId,
+          content: input,
+        }),
       });
-      setFile(null);
-    }
 
-    socket.emit("send_message", newMessage);
-    setInput("");
+      const newMessage = await res.json();
+
+      if (file) {
+        const formData = new FormData();
+        formData.append("message_id", String(newMessage.message_id));
+        formData.append("file", file);
+
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message_attachments`, {
+          method: "POST",
+          body: formData,
+        });
+        setFile(null);
+      }
+
+      socket.emit("send_message", newMessage);
+      setInput("");
+    } catch (err) {
+      console.error("メッセージ送信エラー", err);
+    } finally {
+      setIsSending(false); // ✅ 送信終了
+    }
   };
 
   return (
@@ -198,8 +206,12 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           placeholder="メッセージを入力..."
           className="flex-1 border rounded-xl p-2"
         />
-        <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-2 rounded-xl">
-          送信
+        <button
+          onClick={sendMessage}
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+          disabled={isSending} // ✅ ボタンの無効化
+        >
+          {isSending ? "送信中..." : "送信"} {/* ✅ 表示の切り替え */}
         </button>
       </div>
 
