@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -44,6 +46,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       localStorage.setItem('token', data.access_token);
+      refreshUser();
       router.push('/');
     } catch (err: unknown) {
       console.error('Login error:', err);

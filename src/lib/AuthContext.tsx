@@ -12,14 +12,18 @@ interface JwtPayload {
 
 interface AuthContextType {
   user: JwtPayload | null;
+  refreshUser: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null });
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  refreshUser: () => {},
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<JwtPayload | null>(null);
 
-  useEffect(() => {
+  const refreshUser = () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
@@ -27,12 +31,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(decoded);
       } catch (err) {
         console.error('JWT decode failed', err);
+        setUser(null);
       }
     }
+  };
+
+  useEffect(() => {
+    refreshUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
