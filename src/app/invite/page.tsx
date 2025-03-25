@@ -28,7 +28,28 @@ export default function HomePage() {
             招待リンクをコピーする
           </button>
           <p className="text-center text-gray-700 mb-4">またはSNSで招待リンクを送る</p>
-          <img src="/line-icon.png" alt="LINE" className="w-16 h-16 mb-10" />
+          <button
+            onClick={() => {
+              const inviteUrl = "https://example.com/invite/mock-link";
+              const userAgent = navigator.userAgent.toLowerCase();
+              const isMobile = /iphone|android/.test(userAgent);
+            // PCならブラウザのLINEシェアページに、モバイルならLINEアプリの送信画面に飛ばす
+              if (isMobile) {
+                const message = `このリンクから参加してね: ${inviteUrl}`;
+                const lineScheme = `line://msg/text/${encodeURIComponent(message)}`;
+                window.location.href = lineScheme;
+              } else {
+                const shareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(inviteUrl)}`;
+                window.open(shareUrl, "_blank");
+              }
+            }}
+          >
+            <img
+              src="/line-icon.png"
+              alt="LINE"
+              className="w-16 h-16 mb-10 transition duration-150 ease-in-out hover:opacity-80 active:scale-105"
+            />
+          </button>
         </div>
         <div className="w-full px-4 flex justify-center">
           <Button
