@@ -37,36 +37,36 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
   const currentUserId = 14;    //暫定対応
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
-        const threadData = await threadRes.json();
-        const threadId = threadData?.thread_id;
+  const fetchMessages = async () => {
+    try {
+      const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
+      const threadData = await threadRes.json();
+      const threadId = threadData?.thread_id;
 
-        if (!threadId) {
-          console.error("スレッドが見つかりません");
-          return;
-        }
-
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages?thread_id=${threadId}`);
-        const data = await res.json();
-        setMessages(data);
-
-        const allAttachments: Record<number, Attachment[]> = {};
-        await Promise.all(
-          data.map(async (msg: Message) => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attachments/by-message/${msg.message_id}`);
-            const attachments = await res.json();
-            allAttachments[msg.message_id] = attachments;
-          })
-        );
-        setAttachmentsMap(allAttachments);
-      } catch (err) {
-        console.error("メッセージ取得失敗", err);
+      if (!threadId) {
+        console.error("スレッドが見つかりません");
+        return;
       }
-    };
 
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages?thread_id=${threadId}`);
+      const data = await res.json();
+      setMessages(data);
+
+      const allAttachments: Record<number, Attachment[]> = {};
+      await Promise.all(
+        data.map(async (msg: Message) => {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/attachments/by-message/${msg.message_id}`);
+          const attachments = await res.json();
+          allAttachments[msg.message_id] = attachments;
+        })
+      );
+      setAttachmentsMap(allAttachments);
+    } catch (err) {
+      console.error("メッセージ取得失敗", err);
+    }
+  };
+
+  useEffect(() => {
     fetchMessages();
   }, [itemId]);
 
@@ -119,10 +119,11 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
       socket.emit("send_message", newMessage);
       setInput("");
+      await fetchMessages();
     } catch (err) {
       console.error("メッセージ送信エラー", err);
     } finally {
-      setIsSending(false); // ✅ 送信終了
+      setIsSending(false); 
     }
   };
 
@@ -209,9 +210,9 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         <button
           onClick={sendMessage}
           className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
-          disabled={isSending} // ✅ ボタンの無効化
+          disabled={isSending} 
         >
-          {isSending ? "送信中..." : "送信"} {/* ✅ 表示の切り替え */}
+          {isSending ? "送信中..." : "送信"} 
         </button>
       </div>
 
