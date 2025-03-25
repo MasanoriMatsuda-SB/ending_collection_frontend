@@ -1,4 +1,3 @@
-// app/grouping/page.tsx
 'use client';
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -37,7 +36,7 @@ export default function GroupingPage() {
         <h1 className="text-2xl font-bold text-center mb-6">グループ作成</h1>
         <div className="w-full max-w-md mb-6">
             <form onSubmit={(e) => { e.preventDefault(); handleCreateGroup(); }}>
-            <label className="block text-sm font-medium text-gray-900">グループ名</label>
+            <label className="block text-sm font-medium text-gray-900 text-left">グループ名</label>
             <input
               type="text"
               placeholder="メメモリ家"
