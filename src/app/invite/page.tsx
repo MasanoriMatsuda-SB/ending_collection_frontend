@@ -19,7 +19,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard.writeText("https://example.com/invite/mock-link");
+              navigator.clipboard.writeText("https://example.com/invite/mock-link?fromInvitation=true"); // 今は固定にしていますがバックエンドで一意なトークンを含む招待リンクを生成してトークンで判定するようにするといいと思います
               alert("招待リンクをコピーしました");
             }}
             className="flex items-center justify-center w-full max-w-md py-3 px-4 rounded-full text-white font-bold bg-[#7B6224] hover:bg-[#A8956F] mb-6"
@@ -30,9 +30,9 @@ export default function HomePage() {
           <p className="text-center text-gray-700 mb-4">またはSNSで招待リンクを送る</p>
           <button
             onClick={() => {
-              const inviteUrl = "https://example.com/invite/mock-link";
-              const userAgent = navigator.userAgent.toLowerCase();
-              const isMobile = /iphone|android/.test(userAgent);
+                const inviteUrl = "https://example.com/invite/mock-link?fromInvitation=true"; // 今は固定にしていますがバックエンドで一意なトークンを含む招待リンクを生成してトークンで判定するようにするといいと思います
+                const userAgent = navigator.userAgent.toLowerCase();
+                const isMobile = /iphone|android/.test(userAgent);
             // PCならブラウザのLINEシェアページに、モバイルならLINEアプリの送信画面に飛ばす
               if (isMobile) {
                 const message = `このリンクから参加してね: ${inviteUrl}`;
