@@ -12,20 +12,18 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className="flex items-center space-x-4">
-        <h1 className="text-4xl font-bold text-gray-900">meme mori</h1>
-        {user?.photoURL && (
-          <img
-            src={user.photoURL}
-            alt="User Icon"
-            className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
-          />
-        )}
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white pt-[72px]">
+      <div className="flex items-center space-x-4"></div>
       {user?.sub ? (
         <>
           <p className="text-xl mb-8 text-gray-900">ようこそ、{user.sub}さん</p>
+          {user?.photoURL && (
+            <img
+              src={user.photoURL}
+              alt="User Icon"
+              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 mb-6"
+            />
+          )}
           <div className="flex space-x-4 mb-4">
             <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
               機能A
@@ -46,13 +44,14 @@ export default function HomePage() {
         </>
       ) : (
         <>
+          <h1 className="text-4xl font-bold text-gray-900">meme mori</h1>
           <p className="text-xl mb-8 text-gray-900">
             終活アルバムアプリ
           </p>
           <img
             src="/cover.png"
             alt="Cover Icon"
-            className="mx-auto mb-6 h-[200px]"
+            className="mx-auto mb-6 h-[300px]"
           />
           <Button title="新規アカウント作成" href="/signup" variant="main" />
           <Button title="ログイン" href="/login" variant="sub" />
