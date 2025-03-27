@@ -4,9 +4,18 @@
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function HomePage() {
     const { user } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    
+    const handleCreateGroup = () => {
+    // ここで招待URL経由であれば/invitationに遷移するように条件分岐追加してください
+        router.push('/grouping');
+    };
   
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
@@ -28,9 +37,9 @@ export default function HomePage() {
             </div>
             <Button
               title="グループを作成する"
-              href="/grouping"
+              onClick={handleCreateGroup}
               variant="main"
-            />
+              />
             <div className="mt-4 text-center">
               <Link href="/" className="text-[#7B6224] font-semibold hover:text-[#A8956F]">
                 スキップ

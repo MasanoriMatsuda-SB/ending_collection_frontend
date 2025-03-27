@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,8 +48,10 @@ export default function LoginPage() {
       const data = await res.json();
       localStorage.setItem('token', data.access_token);
       refreshUser();
+
+      // ここで招待URL経由であれば/invitationに遷移するように条件分岐追加してください
       router.push('/');
-    } catch (err: unknown) {
+    } catch (err) {
       console.error('Login error:', err);
       setError('エラーが発生しました');
       setIsLoading(false);
