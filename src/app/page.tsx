@@ -12,8 +12,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white pt-[72px]">
-      <div className="flex items-center space-x-4"></div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
       {user?.sub ? (
         <>
           <p className="text-xl mb-8 text-gray-900">ようこそ、{user.sub}さん</p>
