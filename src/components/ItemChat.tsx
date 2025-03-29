@@ -83,8 +83,13 @@ export default function ItemChat({ itemId }: ItemChatProps) {
       setMessages((prev) => [...prev, msg]);
     });
 
+    socket.on("delete_message", ({ message_id }: { message_id: number }) => {
+      setMessages((prev) => prev.filter((msg) => msg.message_id !== message_id));
+    });
+
     return () => {
       socket.off("receive_message");
+      socket.off("delete_message");
     };
   }, []);
 
@@ -157,6 +162,24 @@ export default function ItemChat({ itemId }: ItemChatProps) {
       setIsSending(false); 
     }
   };
+
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!confirm("このメッセージを削除しますか？")) return;
+  
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/${messageId}`, {
+        method: "DELETE",
+      });
+  
+      setMessages((prev) => prev.filter((msg) => msg.message_id !== messageId));
+      socket.emit("delete_message", { message_id: messageId });
+    } catch (err) {
+      console.error("削除失敗", err);
+    }
+  };
+  
+
+
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
@@ -278,7 +301,9 @@ export default function ItemChat({ itemId }: ItemChatProps) {
             <li
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500"
               onClick={() => {
-                console.log("削除対象:", selectedMessage);
+                if (selectedMessage) {
+                  handleDeleteMessage(selectedMessage.message_id);
+                }
                 setContextMenu(null);
               }}
             >
