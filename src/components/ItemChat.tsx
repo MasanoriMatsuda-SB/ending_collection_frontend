@@ -5,6 +5,8 @@ import io from "socket.io-client";
 import VoiceRecorder from "./VoiceRecorder";
 import VoiceMessage from "./VoiceMessage";
 
+import DevUserSwitcher from "./DevUserSwitcher"; // テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
+
 interface Message {
   message_id: number;
   user_id: number;
@@ -37,7 +39,8 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const currentUserId = 14;    //暫定対応
+  // const currentUserId = 14;    //暫定対応
+  const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
 
   const fetchMessages = async () => {
     try {
@@ -155,26 +158,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                 >
                   <p>{msg.content}</p>
                   <div className="mt-2 space-y-1">
-                    {/* {Array.isArray(msgAttachments) && msgAttachments.map((att) =>
-                      att.attachment_type === "image" ? (
-                        <img
-                          key={att.attachment_id}
-                          src={att.attachment_url}
-                          alt="attachment"
-                          className="rounded max-w-[200px]"
-                        />
-                      ) : (
-                        <a
-                          key={att.attachment_id}
-                          href={att.attachment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline text-sm block"
-                        >
-                          添付ファイルを開く
-                        </a>
-                      )
-                    )} */}
                     {msgAttachments.map((att) => {
                       switch (att.attachment_type) {
                         case "image":
@@ -197,12 +180,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                           );
                         case "voice":
                           return (
-                            // <audio
-                            //   key={att.attachment_id}
-                            //   src={att.attachment_url}
-                            //   controls
-                            //   className="block w-full"
-                            // />
                             <VoiceMessage
                             key={att.attachment_id}
                             src={att.attachment_url}
@@ -282,6 +259,13 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           </button>
         </div>
       )}
+      
+      {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
+      <DevUserSwitcher
+        currentUserId={currentUserId}
+        setCurrentUserId={setCurrentUserId}
+      />
+
     </div>
   );
 }
