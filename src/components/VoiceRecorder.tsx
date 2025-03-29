@@ -2,11 +2,13 @@
 "use client";
 
 import { useState, useRef } from "react";
+import type { Socket } from "socket.io-client";
+import Image from "next/image";
 
 interface VoiceRecorderProps {
   itemId: string;
   currentUserId: number;
-  socket: any;
+  socket: Socket;
   fetchMessages: () => void;
 }
 
@@ -87,10 +89,18 @@ export default function VoiceRecorder({ itemId, currentUserId, socket, fetchMess
         onClick={toggleRecording}
         className={`cursor-pointer ${isRecording ? "animate-pulse" : ""}`}
       >
-        <img
+        {/* <img
           src="/icon-record.png"
           alt="録音"
           className={`w-3 h-6 ${isRecording ? "brightness-50" : ""}`}
+        /> */}
+
+        <Image
+        src="/icon-record.png"
+        alt="録音"
+        width={24}
+        height={24}
+        className="w-3 h-6"
         />
       </button>
       {isRecording && (
