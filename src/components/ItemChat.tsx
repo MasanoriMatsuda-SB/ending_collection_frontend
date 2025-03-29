@@ -42,6 +42,9 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   // const currentUserId = 14;    //暫定対応
   const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
 
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
   const fetchMessages = async () => {
     try {
       const threadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${itemId}`);
@@ -82,6 +85,29 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
     return () => {
       socket.off("receive_message");
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".context-menu")) {
+        setContextMenu(null);
+      }
+    };
+  
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setContextMenu(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEsc);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEsc);
     };
   }, []);
 
@@ -152,10 +178,30 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                   />
                 )}
                 <div
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setSelectedMessage(msg);
+                    setContextMenu({ x: e.clientX, y: e.clientY });
+                  }}
+                  onTouchStart={(e) => {
+                    const timeout = setTimeout(() => {
+                      const touch = e.touches[0];
+                      setSelectedMessage(msg);
+                      setContextMenu({ x: touch.clientX, y: touch.clientY });
+                    }, 600);
+                    const clear = () => clearTimeout(timeout);
+                    e.currentTarget.addEventListener("touchend", clear, { once: true });
+                    e.currentTarget.addEventListener("touchmove", clear, { once: true });
+                  }}
                   className={`max-w-xs px-4 py-2 rounded-xl text-sm shadow text-left ${
                     isCurrentUser ? "bg-blue-100" : "bg-gray-200"
                   }`}
                 >
+                {/* <div
+                  className={`max-w-[65%] px-4 py-2 rounded-xl text-sm shadow text-left whitespace-pre-wrap break-words ${
+                    isCurrentUser ? "bg-blue-100" : "bg-gray-200"
+                  }`}
+                > */}
                   <p>{msg.content}</p>
                   <div className="mt-2 space-y-1">
                     {msgAttachments.map((att) => {
@@ -211,6 +257,36 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         })}
         <div ref={bottomRef} />
       </div>
+
+      {/* コンテキストメニュー（右クリック・長押し） */}
+      {contextMenu && selectedMessage && (
+        <div
+          className="fixed bg-white border rounded shadow-lg z-50 context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={() => setContextMenu(null)}
+        >
+          <ul className="text-sm">
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                console.log("リプライ対象:", selectedMessage);
+                setContextMenu(null);
+              }}
+            >
+              リプライ
+            </li>
+            <li
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500"
+              onClick={() => {
+                console.log("削除対象:", selectedMessage);
+                setContextMenu(null);
+              }}
+            >
+              削除
+            </li>
+          </ul>
+        </div>
+      )}
 
       {/* メッセージ入力エリア */}
       <div className="mt-4 flex items-center border-t pt-2 space-x-2">
