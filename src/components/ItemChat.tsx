@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import VoiceRecorder from "./VoiceRecorder";
+import VoiceMessage from "./VoiceMessage";
 
 interface Message {
   message_id: number;
@@ -154,7 +155,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                 >
                   <p>{msg.content}</p>
                   <div className="mt-2 space-y-1">
-                    {Array.isArray(msgAttachments) && msgAttachments.map((att) =>
+                    {/* {Array.isArray(msgAttachments) && msgAttachments.map((att) =>
                       att.attachment_type === "image" ? (
                         <img
                           key={att.attachment_id}
@@ -173,7 +174,55 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                           添付ファイルを開く
                         </a>
                       )
-                    )}
+                    )} */}
+                    {msgAttachments.map((att) => {
+                      switch (att.attachment_type) {
+                        case "image":
+                          return (
+                            <img
+                              key={att.attachment_id}
+                              src={att.attachment_url}
+                              alt="attachment"
+                              className="rounded max-w-[200px]"
+                            />
+                          );
+                        case "video":
+                          return (
+                            <video
+                              key={att.attachment_id}
+                              src={att.attachment_url}
+                              controls
+                              className="rounded max-w-[200px]"
+                            />
+                          );
+                        case "voice":
+                          return (
+                            // <audio
+                            //   key={att.attachment_id}
+                            //   src={att.attachment_url}
+                            //   controls
+                            //   className="block w-full"
+                            // />
+                            <VoiceMessage
+                            key={att.attachment_id}
+                            src={att.attachment_url}
+                          />
+                          );
+                        default:
+                          return (
+                            <a
+                              key={att.attachment_id}
+                              href={att.attachment_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline text-sm block"
+                            >
+                              添付ファイルを開く
+                            </a>
+                          );
+                      }
+                    })}
+
                   </div>
                   <p className="text-[10px] text-gray-500 mt-1">
                     {msg.username} ・ {new Date(msg.created_at).toLocaleTimeString()}
