@@ -187,8 +187,8 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
       {/* メッセージ入力エリア */}
       <div className="mt-4 flex items-center border-t pt-2 space-x-2">
-        <label htmlFor="fileInput" className="cursor-pointer bg-gray-300 px-2 py-1 rounded text-sm">
-          📎 添付
+        <label htmlFor="fileInput" className="cursor-pointer">
+          <img src="/icon-attachment.png" alt="添付アイコン" className="w-6 h-6" />
         </label>
         <input
           id="fileInput"
@@ -200,6 +200,12 @@ export default function ItemChat({ itemId }: ItemChatProps) {
             }
           }}
         />
+
+        {/* 録音アイコン（クリックイベント未実装） */}
+        <button type="button" className="cursor-pointer">
+          <img src="/icon-record.png" alt="録音" className="w-3 h-6" />
+        </button>
+
         <input
           type="text"
           value={input}
