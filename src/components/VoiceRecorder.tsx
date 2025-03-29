@@ -1,4 +1,3 @@
-// src/components/VoiceRecorder.tsx
 "use client";
 
 import { useState, useRef } from "react";
@@ -89,12 +88,6 @@ export default function VoiceRecorder({ itemId, currentUserId, socket, fetchMess
         onClick={toggleRecording}
         className={`cursor-pointer ${isRecording ? "animate-pulse" : ""}`}
       >
-        {/* <img
-          src="/icon-record.png"
-          alt="録音"
-          className={`w-3 h-6 ${isRecording ? "brightness-50" : ""}`}
-        /> */}
-
         <Image
         src="/icon-record.png"
         alt="録音"
