@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
+import VoiceRecorder from "./VoiceRecorder";
 
 interface Message {
   message_id: number;
@@ -201,10 +202,12 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           }}
         />
 
-        {/* 録音アイコン（クリックイベント未実装） */}
-        <button type="button" className="cursor-pointer">
-          <img src="/icon-record.png" alt="録音" className="w-3 h-6" />
-        </button>
+        <VoiceRecorder
+          itemId={itemId}
+          currentUserId={currentUserId}
+          socket={socket}
+          fetchMessages={fetchMessages}
+        />
 
         <input
           type="text"
