@@ -70,14 +70,6 @@ export default function VoiceMessage({ src }: VoiceMessageProps) {
         {isPlaying ? <Pause size={20} /> : <Play size={20} />}
       </button>
 
-      {/* <audio
-        ref={audioRef}
-        src={src}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        hidden
-      /> */}
-
         <audio
         ref={audioRef}
         src={src}
