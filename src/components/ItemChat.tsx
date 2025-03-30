@@ -7,22 +7,27 @@ import VoiceMessage from "./VoiceMessage";
 
 import DevUserSwitcher from "./DevUserSwitcher"; // テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
 
-interface Message {
-  message_id: number;
-  user_id: number;
-  content: string;
-  created_at: string;
-  username: string;
-  photoURL?: string;
-  parent_message_id?: number | null;
-}
+import MessageBubble from "./Chat/MessageBubble";
+import ContextMenu from "./Chat/ContextMenu"
 
-interface Attachment {
-  attachment_id: number;
-  attachment_url: string;
-  attachment_type: "image" | "video" | "voice" | "file";
-  uploaded_at: string;
-}
+import { Message, Attachment } from "@/types/chat"
+
+// interface Message {
+//   message_id: number;
+//   user_id: number;
+//   content: string;
+//   created_at: string;
+//   username: string;
+//   photoURL?: string;
+//   parent_message_id?: number | null;
+// }
+
+// interface Attachment {
+//   attachment_id: number;
+//   attachment_url: string;
+//   attachment_type: "image" | "video" | "voice" | "file";
+//   uploaded_at: string;
+// }
 
 interface ItemChatProps {
   itemId: string;
@@ -219,7 +224,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
       <div className="flex-1 overflow-y-auto space-y-2">
-      {messages.map((msg, index) => {
+      {/* {messages.map((msg, index) => {
         const isCurrentUser = msg.user_id === currentUserId;
         const msgAttachments = attachmentsMap[msg.message_id] || [];
         const replyTo = msg.parent_message_id
@@ -328,13 +333,56 @@ export default function ItemChat({ itemId }: ItemChatProps) {
             </div>
           </div>
         );
-      })}
+      })} */}
+
+        {messages.map((msg, index) => {
+          const replyTo = msg.parent_message_id
+            ? messages.find((m) => m.message_id === msg.parent_message_id)
+            : null;
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          const showDateLabel = !prevMsg || !isSameDay(prevMsg.created_at, msg.created_at);
+
+          return (
+            <div key={msg.message_id}>
+              {showDateLabel && (
+                <div className="text-center text-xs text-gray-500 my-2">
+                  <span className="bg-white px-2 py-1 rounded shadow-sm">
+                    {formatDateLabel(msg.created_at)}
+                  </span>
+                </div>
+              )}
+
+              <MessageBubble
+                msg={msg}
+                currentUserId={currentUserId}
+                attachments={attachmentsMap[msg.message_id] || []}
+                replyTo={replyTo ?? null}
+                onRightClick={(e, m) => {
+                  e.preventDefault();
+                  setSelectedMessage(m);
+                  setContextMenu({ x: e.clientX, y: e.clientY });
+                }}
+                onTouchHold={(e, m) => {
+                  const timeout = setTimeout(() => {
+                    const touch = e.touches[0];
+                    setSelectedMessage(m);
+                    setContextMenu({ x: touch.clientX, y: touch.clientY });
+                  }, 600);
+                  const clear = () => clearTimeout(timeout);
+                  e.currentTarget.addEventListener("touchend", clear, { once: true });
+                  e.currentTarget.addEventListener("touchmove", clear, { once: true });
+                }}
+                formatTime={formatTime}
+              />
+            </div>
+          );
+        })}
 
         <div ref={bottomRef} />
       </div>
 
       {/* コンテキストメニュー（右クリック・長押し） */}
-      {contextMenu && selectedMessage && (
+      {/* {contextMenu && selectedMessage && (
         <div
           className="fixed bg-white border rounded shadow-lg z-50 context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -369,7 +417,23 @@ export default function ItemChat({ itemId }: ItemChatProps) {
             </li>
           </ul>
         </div>
-      )}
+      )} */}
+      <ContextMenu
+        contextMenu={contextMenu}
+        selectedMessage={selectedMessage}
+        onClose={() => setContextMenu(null)}
+        onReply={() => {
+          if (selectedMessage) {
+            setReplyToMessage(selectedMessage);
+          }
+        }}
+        onDelete={() => {
+          if (selectedMessage) {
+            handleDeleteMessage(selectedMessage.message_id);
+          }
+        }}
+      />
+
 
       {/* メッセージ入力エリア */}
       {replyToMessage && (
