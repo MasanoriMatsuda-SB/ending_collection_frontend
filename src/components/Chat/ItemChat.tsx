@@ -13,6 +13,8 @@ import ContextMenu from "./ContextMenu"
 import DateLabel from "./DateLabel"; 
 import MessageInputArea from "./MessageInputArea"
 
+import MessageReactionButton from "./MessageReactionButton";
+import { MessageReaction } from "@/types/chat";
 
 interface ItemChatProps {
   itemId: string;
@@ -32,6 +34,8 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  const [reactionsMap, setReactionsMap] = useState<Record<number, MessageReaction[]>>({});
 
   const fetchMessages = async () => {
     try {
@@ -65,9 +69,25 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     }
   };
 
+  const fetchReactions = async () => {
+    const all: Record<number, MessageReaction[]> = {};
+    for (const msg of messages) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
+      const data = await res.json();
+      all[msg.message_id] = data;
+    }
+    setReactionsMap(all);
+  };
+  
+
   useEffect(() => {
     fetchMessages();
   }, [itemId]);
+
+  useEffect(() => {
+    fetchReactions();
+  }, [messages]);
+  
 
   useEffect(() => {
     socket.on("receive_message", (msg: Message) => {
@@ -156,6 +176,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     }
   };
 
+  
   const handleDeleteMessage = async (messageId: number) => {
     if (!confirm("このメッセージを削除しますか？")) return;
   
@@ -171,6 +192,23 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     }
   };
   
+  const handleReact = async (messageId: number, type: string) => {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message_id: messageId, user_id: currentUserId, reaction_type: type }),
+    });
+    await fetchReactions();
+  };
+  
+  const handleRemove = async (messageId: number) => {
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/reactions?message_id=${messageId}&user_id=${currentUserId}`,
+      { method: "DELETE" }
+    );
+    await fetchReactions();
+  };
+
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
@@ -188,6 +226,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                 <DateLabel dateString={msg.created_at} />
               )}
 
+              {/*メッセージバブル */}
               <MessageBubble
                 msg={msg}
                 currentUserId={currentUserId}
@@ -210,6 +249,19 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                 }}
                 formatTime={formatTime}
               />
+              
+              {/*リアクションボタン */}
+              {selectedMessage?.message_id === msg.message_id && (
+                <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
+                  <MessageReactionButton
+                    messageId={msg.message_id}
+                    userId={currentUserId}
+                    initialReactions={reactionsMap[msg.message_id] || []}
+                    onReact={(type) => handleReact(msg.message_id, type)}
+                    onRemove={() => handleRemove(msg.message_id)}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

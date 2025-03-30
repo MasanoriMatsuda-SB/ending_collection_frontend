@@ -15,3 +15,10 @@ export interface Message {
     uploaded_at: string;
   }
   
+  export interface MessageReaction {
+    reaction_id: number;
+    message_id: number;
+    user_id: number;
+    reaction_type: "like" | "heart" | "smile" | "sad" | "agree";
+    created_at: string;
+  }
