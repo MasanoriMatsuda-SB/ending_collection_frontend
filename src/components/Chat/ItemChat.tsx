@@ -1,15 +1,15 @@
 "use client";
 
+import { Message, Attachment } from "@/types/chat"
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
-// import VoiceRecorder from "../Voice/VoiceRecorder";
+// import io from "socket.io-client";
+import socket from "@/lib/socket";
+import { formatTime, isSameDay } from "@/lib/utils";
 
 import DevUserSwitcher from "../DevUserSwitcher"; // テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
 
 import MessageBubble from "./MessageBubble";
 import ContextMenu from "./ContextMenu"
-
-import { Message, Attachment } from "@/types/chat"
 import DateLabel from "./DateLabel"; 
 import MessageInputArea from "./MessageInputArea"
 
@@ -18,9 +18,9 @@ interface ItemChatProps {
   itemId: string;
 }
 
-const socket = io(process.env.NEXT_PUBLIC_API_URL || "", {
-  transports: ["websocket"],
-});
+// const socket = io(process.env.NEXT_PUBLIC_API_URL || "", {
+//   transports: ["websocket"],
+// });
 
 export default function ItemChat({ itemId }: ItemChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,22 +37,22 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const hours = date.getHours(); // 0埋めしない
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
+  // const formatTime = (dateString: string) => {
+  //   const date = new Date(dateString);
+  //   const hours = date.getHours(); // 0埋めしない
+  //   const minutes = String(date.getMinutes()).padStart(2, "0");
+  //   return `${hours}:${minutes}`;
+  // };
 
-  const isSameDay = (date1: string, date2: string) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  };
+  // const isSameDay = (date1: string, date2: string) => {
+  //   const d1 = new Date(date1);
+  //   const d2 = new Date(date2);
+  //   return (
+  //     d1.getFullYear() === d2.getFullYear() &&
+  //     d1.getMonth() === d2.getMonth() &&
+  //     d1.getDate() === d2.getDate()
+  //   );
+  // };
 
 
   const fetchMessages = async () => {
@@ -194,8 +194,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   };
   
 
-
-
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
       <div className="flex-1 overflow-y-auto space-y-2">
@@ -258,7 +256,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         }}
       />
 
-
       {/* メッセージ入力エリア */}
       <MessageInputArea
         input={input}
@@ -273,64 +270,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         socket={socket}
         fetchMessages={fetchMessages}
       />
-      {/* {replyToMessage && (
-        <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-blue-400 rounded relative text-sm text-gray-700">
-          <p className="font-semibold">{replyToMessage.username} への返信</p>
-          <p className="truncate">{replyToMessage.content}</p>
-          <button
-            className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 text-xs"
-            onClick={() => setReplyToMessage(null)}
-          >
-            ×
-          </button>
-        </div>
-      )}
-      <div className="mt-4 flex items-center border-t pt-2 space-x-2">
-        <label htmlFor="fileInput" className="cursor-pointer">
-          <img src="/icon-attachment.png" alt="添付アイコン" className="w-6 h-6" />
-        </label>
-        <input
-          id="fileInput"
-          type="file"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.[0]) {
-              setFile(e.target.files[0]);
-            }
-          }}
-        />
-
-        <VoiceRecorder
-          itemId={itemId}
-          currentUserId={currentUserId}
-          socket={socket}
-          fetchMessages={fetchMessages}
-        />
-
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="メッセージを入力..."
-          className="flex-1 border rounded-xl p-2"
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
-          disabled={isSending} 
-        >
-          {isSending ? "送信中..." : "送信"} 
-        </button>
-      </div>
-
-      {file && (
-        <div className="mt-2 text-sm text-gray-600">
-          添付ファイル: {file.name}
-          <button onClick={() => setFile(null)} className="ml-2 text-red-500 text-xs">
-            取消
-          </button>
-        </div>
-      )} */}
       
       {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
       <DevUserSwitcher
