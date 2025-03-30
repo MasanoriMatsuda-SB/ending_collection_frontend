@@ -44,15 +44,15 @@ export default function ItemChat({ itemId }: ItemChatProps) {
     return `${hours}:${minutes}`;
   };
 
-  const formatDateLabel = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "short",
-    });
-  };
+  // const formatDateLabel = (dateString: string) => {
+  //   const date = new Date(dateString);
+  //   return date.toLocaleDateString("ja-JP", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //     weekday: "short",
+  //   });
+  // };
   
   const isSameDay = (date1: string, date2: string) => {
     const d1 = new Date(date1);
