@@ -2,7 +2,7 @@
 import { use } from "react"
 import { useState } from "react";
 // import ItemDetail from "@/components/ItemDetail";
-import ItemChat from "@/components/ItemChat";
+import ItemChat from "@/components/Chat/ItemChat";
 
 type PageProps = {
     params: Promise<{
