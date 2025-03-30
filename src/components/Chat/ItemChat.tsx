@@ -18,10 +18,6 @@ interface ItemChatProps {
   itemId: string;
 }
 
-// const socket = io(process.env.NEXT_PUBLIC_API_URL || "", {
-//   transports: ["websocket"],
-// });
-
 export default function ItemChat({ itemId }: ItemChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [attachmentsMap, setAttachmentsMap] = useState<Record<number, Attachment[]>>({});
@@ -36,24 +32,6 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-
-  // const formatTime = (dateString: string) => {
-  //   const date = new Date(dateString);
-  //   const hours = date.getHours(); // 0埋めしない
-  //   const minutes = String(date.getMinutes()).padStart(2, "0");
-  //   return `${hours}:${minutes}`;
-  // };
-
-  // const isSameDay = (date1: string, date2: string) => {
-  //   const d1 = new Date(date1);
-  //   const d2 = new Date(date2);
-  //   return (
-  //     d1.getFullYear() === d2.getFullYear() &&
-  //     d1.getMonth() === d2.getMonth() &&
-  //     d1.getDate() === d2.getDate()
-  //   );
-  // };
-
 
   const fetchMessages = async () => {
     try {
