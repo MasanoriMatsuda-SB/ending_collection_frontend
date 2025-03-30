@@ -14,6 +14,7 @@ interface Message {
   created_at: string;
   username: string;
   photoURL?: string;
+  parent_message_id?: number | null;
 }
 
 interface Attachment {
@@ -61,6 +62,9 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages?thread_id=${threadId}`);
       const data = await res.json();
+
+      console.log(data);
+      
       setMessages(data);
 
       const allAttachments: Record<number, Attachment[]> = {};
@@ -192,6 +196,9 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         {messages.map((msg) => {
           const isCurrentUser = msg.user_id === currentUserId;
           const msgAttachments = attachmentsMap[msg.message_id] || [];
+          const replyTo = msg.parent_message_id
+            ? messages.find((m) => m.message_id === msg.parent_message_id)
+            : null;
 
           return (
             <div key={msg.message_id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
@@ -225,11 +232,17 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                     isCurrentUser ? "bg-blue-100" : "bg-gray-200"
                   }`}
                 >
-                {/* <div
-                  className={`max-w-[65%] px-4 py-2 rounded-xl text-sm shadow text-left whitespace-pre-wrap break-words ${
-                    isCurrentUser ? "bg-blue-100" : "bg-gray-200"
-                  }`}
-                > */}
+                  {replyTo && (
+                    <div className="mb-2 p-2 bg-white/70 text-gray-700 text-xs border-l-4 border-blue-300 rounded">
+                      <p className="font-semibold">{replyTo.username}</p>
+                      <p className="truncate">{replyTo.content}</p>
+                    </div>
+                  )}
+                  {msg.parent_message_id && !replyTo && (
+                    <div className="mb-2 p-2 bg-white/50 text-gray-500 text-xs border-l-4 border-gray-300 rounded">
+                      <p className="italic">メッセージは削除されました</p>
+                    </div>
+                  )}
                   <p>{msg.content}</p>
                   <div className="mt-2 space-y-1">
                     {msgAttachments.map((att) => {
