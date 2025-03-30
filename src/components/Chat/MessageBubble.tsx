@@ -1,26 +1,9 @@
 "use client";
 
 import React from "react";
-// import VoiceMessage from "../Voice/VoiceMessage";
-import VoiceMessage from "../VoiceMessage";
+import VoiceMessage from "../Voice/VoiceMessage";
+// import VoiceMessage from "../VoiceMessage";
 import { Message, Attachment } from "@/types/chat"
-
-// interface Message {
-//   message_id: number;
-//   user_id: number;
-//   content: string;
-//   created_at: string;
-//   username: string;
-//   photoURL?: string;
-//   parent_message_id?: number | null;
-// }
-
-// interface Attachment {
-//   attachment_id: number;
-//   attachment_url: string;
-//   attachment_type: "image" | "video" | "voice" | "file";
-//   uploaded_at: string;
-// }
 
 interface Props {
   msg: Message;
