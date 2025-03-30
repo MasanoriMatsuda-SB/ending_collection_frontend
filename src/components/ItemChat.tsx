@@ -43,7 +43,10 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
 
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+
 
   const fetchMessages = async () => {
     try {
@@ -136,6 +139,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           thread_id: thread.thread_id,
           user_id: currentUserId,
           content: input,
+          parent_message_id: replyToMessage?.message_id ?? null,
         }),
       });
 
@@ -155,6 +159,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
 
       socket.emit("send_message", newMessage);
       setInput("");
+      setReplyToMessage(null);
       await fetchMessages();
     } catch (err) {
       console.error("メッセージ送信エラー", err);
@@ -291,8 +296,14 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           <ul className="text-sm">
             <li
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              // onClick={() => {
+              //   console.log("リプライ対象:", selectedMessage);
+              //   setContextMenu(null);
+              // }}
               onClick={() => {
-                console.log("リプライ対象:", selectedMessage);
+                if (selectedMessage) {
+                  setReplyToMessage(selectedMessage); 
+                }
                 setContextMenu(null);
               }}
             >
@@ -314,6 +325,18 @@ export default function ItemChat({ itemId }: ItemChatProps) {
       )}
 
       {/* メッセージ入力エリア */}
+      {replyToMessage && (
+        <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-blue-400 rounded relative text-sm text-gray-700">
+          <p className="font-semibold">{replyToMessage.username} への返信</p>
+          <p className="truncate">{replyToMessage.content}</p>
+          <button
+            className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 text-xs"
+            onClick={() => setReplyToMessage(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div className="mt-4 flex items-center border-t pt-2 space-x-2">
         <label htmlFor="fileInput" className="cursor-pointer">
           <img src="/icon-attachment.png" alt="添付アイコン" className="w-6 h-6" />
