@@ -47,6 +47,32 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const hours = date.getHours(); // 0埋めしない
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  const formatDateLabel = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "short",
+    });
+  };
+  
+  const isSameDay = (date1: string, date2: string) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
 
 
   const fetchMessages = async () => {
@@ -193,15 +219,27 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
       <div className="flex-1 overflow-y-auto space-y-2">
-        {messages.map((msg) => {
-          const isCurrentUser = msg.user_id === currentUserId;
-          const msgAttachments = attachmentsMap[msg.message_id] || [];
-          const replyTo = msg.parent_message_id
-            ? messages.find((m) => m.message_id === msg.parent_message_id)
-            : null;
+      {messages.map((msg, index) => {
+        const isCurrentUser = msg.user_id === currentUserId;
+        const msgAttachments = attachmentsMap[msg.message_id] || [];
+        const replyTo = msg.parent_message_id
+          ? messages.find((m) => m.message_id === msg.parent_message_id)
+          : null;
 
-          return (
-            <div key={msg.message_id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
+        const prevMsg = index > 0 ? messages[index - 1] : null;
+        const showDateLabel = !prevMsg || !isSameDay(prevMsg.created_at, msg.created_at);
+
+        return (
+          <div key={msg.message_id}>
+            {showDateLabel && (
+              <div className="text-center text-xs text-gray-500 my-2">
+                <span className="bg-white px-2 py-1 rounded shadow-sm">
+                  {formatDateLabel(msg.created_at)}
+                </span>
+              </div>
+            )}
+
+            <div className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-end space-x-2 ${isCurrentUser ? "flex-row-reverse" : ""}`}>
                 {msg.photoURL && (
                   <img
@@ -266,12 +304,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                             />
                           );
                         case "voice":
-                          return (
-                            <VoiceMessage
-                            key={att.attachment_id}
-                            src={att.attachment_url}
-                          />
-                          );
+                          return <VoiceMessage key={att.attachment_id} src={att.attachment_url} />;
                         default:
                           return (
                             <a
@@ -286,16 +319,17 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                           );
                       }
                     })}
-
                   </div>
                   <p className="text-[10px] text-gray-500 mt-1">
-                    {msg.username} ・ {new Date(msg.created_at).toLocaleTimeString()}
+                    {msg.username} ・ {formatTime(msg.created_at)}
                   </p>
                 </div>
               </div>
             </div>
-          );
-        })}
+          </div>
+        );
+      })}
+
         <div ref={bottomRef} />
       </div>
 
