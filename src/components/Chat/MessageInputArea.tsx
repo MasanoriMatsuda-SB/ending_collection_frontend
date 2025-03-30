@@ -3,6 +3,7 @@
 import React from "react";
 import VoiceRecorder from "../Voice/VoiceRecorder";
 import { Message } from "@/types/chat";
+import type { Socket } from "socket.io-client";
 
 interface Props {
   input: string;
@@ -14,7 +15,7 @@ interface Props {
   sendMessage: () => void;
   currentUserId: number;
   itemId: string;
-  socket: any;
+  socket: Socket;
   fetchMessages: () => void;
 }
 
