@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import VoiceRecorder from "./VoiceRecorder";
-import VoiceMessage from "./VoiceMessage";
+// import VoiceMessage from "./VoiceMessage";
 
 import DevUserSwitcher from "./DevUserSwitcher"; // テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
 
