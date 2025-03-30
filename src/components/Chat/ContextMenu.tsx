@@ -1,4 +1,3 @@
-// src/components/Chat/ContextMenu.tsx
 "use client";
 import React from "react";
 import { Message } from "../../types/chat"

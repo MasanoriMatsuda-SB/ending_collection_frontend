@@ -2,7 +2,6 @@
 
 import React from "react";
 import VoiceMessage from "../Voice/VoiceMessage";
-// import VoiceMessage from "../VoiceMessage";
 import { Message, Attachment } from "@/types/chat"
 
 interface Props {
