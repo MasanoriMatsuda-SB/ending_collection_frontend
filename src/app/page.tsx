@@ -1,19 +1,19 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
+//import { useEffect, useState } from 'react';
+//import { jwtDecode } from 'jwt-decode';
 //import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
 import { useRouter } from 'next/navigation';
 
-interface JwtPayload {
-  sub: string;
-  photoURL?: string | null;
-  exp: number;
-  iat: number;
-}
+// interface JwtPayload {
+//   sub: string;
+//   photoURL?: string | null;
+//   exp: number;
+//   iat: number;
+// }
 
 export default function HomePage() {
   //const [username, setUsername] = useState<string | null>(null);

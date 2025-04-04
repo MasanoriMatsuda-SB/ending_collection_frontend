@@ -1,6 +1,6 @@
 // app/grouping/finish/page.tsx
 'use client';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
 import Link from 'next/link';
@@ -9,7 +9,6 @@ export default function GroupingFinishPage() {
   const params = useSearchParams();
   const { user } = useAuth();
   const groupName = params.get('groupName') || '未設定';
-  const router = useRouter();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
