@@ -17,20 +17,28 @@ interface JwtPayload {
 export default function HomePage() {
   //const [username, setUsername] = useState<string | null>(null);
   //const [photoURL, setPhotoURL] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = jwtDecode<JwtPayload>(token);
-        // setUsername(decoded.sub);
-        // setPhotoURL(decoded.photoURL ?? null);
-      } catch (error) {
-        console.error('JWT decode error:', error);
-      }
-    }
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   if (token) {
+  //     try {
+  //       const decoded = jwtDecode<JwtPayload>(token);
+  //       // setUsername(decoded.sub);
+  //       // setPhotoURL(decoded.photoURL ?? null);
+  //     } catch (error) {
+  //       console.error('JWT decode error:', error);
+  //     }
+  //   }
+  // }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -41,7 +49,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      {user?.sub ? (
+      {user? (
         <>
           <p className="text-xl mb-8 text-gray-900">ようこそ、{user.sub}さん</p>
           {user?.photoURL && (
