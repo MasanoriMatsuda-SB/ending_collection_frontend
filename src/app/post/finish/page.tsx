@@ -1,7 +1,7 @@
-// app/post/finish/page.tsx
+// src/app/post/finish/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface ItemDetails {
@@ -10,7 +10,7 @@ interface ItemDetails {
   image_url: string;
 }
 
-export default function FinishPage() {
+function FinishContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const itemId = searchParams.get('id');
@@ -19,20 +19,15 @@ export default function FinishPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchItem = async () => {
+    async function fetchItem() {
       if (!itemId) {
         setError('アイテムIDが指定されていません');
         setIsLoading(false);
         return;
       }
-
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/${itemId}`);
-        
-        if (!res.ok) {
-          throw new Error('アイテムの取得に失敗しました');
-        }
-
+        if (!res.ok) throw new Error('アイテムの取得に失敗しました');
         const data = await res.json();
         setItem(data);
       } catch (err) {
@@ -41,8 +36,7 @@ export default function FinishPage() {
       } finally {
         setIsLoading(false);
       }
-    };
-
+    }
     fetchItem();
   }, [itemId]);
 
@@ -135,5 +129,17 @@ export default function FinishPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function FinishPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600">読み込み中...</p>
+      </div>
+    }>
+      <FinishContent />
+    </Suspense>
   );
 }
