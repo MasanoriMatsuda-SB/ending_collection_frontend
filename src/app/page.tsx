@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 //import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
+import { useRouter } from 'next/navigation';
 
 interface JwtPayload {
   sub: string;
@@ -18,6 +19,8 @@ export default function HomePage() {
   //const [username, setUsername] = useState<string | null>(null);
   //const [photoURL, setPhotoURL] = useState<string | null>(null);
   const { user, loading } = useAuth();
+  const router = useRouter();
+
 
   if (loading) {
     return (
@@ -60,8 +63,11 @@ export default function HomePage() {
             />
           )}
           <div className="flex space-x-4 mb-4">
-            <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-              機能A
+            <button
+              onClick={() => router.push('/post')}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            >
+              追加
             </button>
             <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
               機能B
