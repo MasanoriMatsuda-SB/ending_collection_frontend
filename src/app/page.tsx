@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface JwtPayload {
   sub: string;
@@ -13,6 +14,7 @@ interface JwtPayload {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [username, setUsername] = useState<string | null>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
 
@@ -51,8 +53,11 @@ export default function HomePage() {
         <>
           <p className="text-xl mb-8 text-gray-900">ようこそ、{username}さん</p>
           <div className="flex space-x-4 mb-4">
-            <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-              機能A
+            <button
+              onClick={() => router.push('/post')}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            >
+              追加
             </button>
             <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
               機能B
