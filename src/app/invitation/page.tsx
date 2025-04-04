@@ -13,9 +13,6 @@ export default function InvitationPage() {
     router.push('/');
   };
 
-  const handleCreateGroup = () => {
-    router.push('/grouping');
-  };
 
   if (!user?.sub) {
     return (

@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function HomePage() {
     const { user } = useAuth();
     const router = useRouter();
-    const searchParams = useSearchParams();
+    //const searchParams = useSearchParams();
 
     
     const handleCreateGroup = () => {
