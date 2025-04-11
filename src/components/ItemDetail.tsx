@@ -47,7 +47,7 @@ export default function ItemDetail({ itemId }: Props) {
     useEffect(() => {
         const fetchItemAndRef = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/${itemId}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/detail/${itemId}`);
                 if (!res.ok) throw new Error("Item not found");
                 const itemData = await res.json();
                 setItem(itemData);

@@ -3,7 +3,7 @@ import { use } from "react";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import ItemDetail from "@/components/ItemDetail";
-import ItemChat from "@/components/ItemChat";
+import ItemChat from "@/components/Chat/ItemChat";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +12,7 @@ type PageProps = {
 type ItemImage = {
   image_id: number;
   item_id: number;
-  image: string;
+  image_url: string;
 };
 
 type JwtPayload = {
@@ -104,14 +104,16 @@ export default function ItemPage({ params }: PageProps) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {images.map((img) => (
-          <img
-            key={img.image_id}
-            src={img.image}
-            alt={`Item Image ${img.image_id}`}
-            className="h-48 rounded shadow"
-          />
-        ))}
+        {images.map((img) => {
+          return (
+            <img
+              key={img.image_id}
+              src={img.image_url || "/no-image.svg"}
+              alt={`Item Image ${img.image_id}`}
+              className="h-48 rounded shadow"
+            />
+          );
+        })}
       </div>
 
       {/* タブ切り替え */}
