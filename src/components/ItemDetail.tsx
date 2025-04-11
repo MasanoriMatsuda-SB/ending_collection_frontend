@@ -30,6 +30,11 @@ type ReferenceItem = {
     created_at: string;
 };
 
+type HistogramBin = {
+    price: number;
+    count: number;
+};
+
 export default function ItemDetail({ itemId }: Props) {
     const [item, setItem] = useState<ItemData | null>(null);
     const [referenceItem, setReferenceItem] = useState<ReferenceItem | null>(null);
@@ -42,7 +47,7 @@ export default function ItemDetail({ itemId }: Props) {
 
     const [medianPrice, setMedianPrice] = useState<number | null>(null);
     const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
-    const [histogramData, setHistogramData] = useState<any[]>([]);
+    const [histogramData, setHistogramData] = useState<HistogramBin[]>([]);
 
     useEffect(() => {
         const fetchItemAndRef = async () => {
