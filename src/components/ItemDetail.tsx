@@ -62,8 +62,12 @@ export default function ItemDetail({ itemId }: Props) {
                     const refData = refRes.ok ? await refRes.json() : null;
                     setReferenceItem(refData);
                 }
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("不明なエラーが発生しました");
+                }
             }
         };
         fetchItemAndRef();
