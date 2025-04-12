@@ -30,7 +30,7 @@ export default function SearchPopup({ onClose, itemId }: Props) {
 
       console.log("APIレスポンス:", data);  //検証用（後で削除する）
 
-      setResults(data.results.map((m: any) => m.content));
+      setResults(data.results.map((m: { content: string }) => m.content));
       setError(null);
     } catch (err) {
       console.error("検索失敗:", err);
