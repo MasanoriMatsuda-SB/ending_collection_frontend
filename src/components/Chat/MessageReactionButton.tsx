@@ -14,6 +14,7 @@ interface Props {
   initialReactions: Reaction[];
   onReact: (type: string) => void;
   onRemove: () => void;
+  showAll?: boolean;
 }
 
 const EMOJIS = ["👍", "❤️", "😄", "😢", "👌"];
@@ -24,8 +25,13 @@ export default function MessageReactionButton({
   initialReactions,
   onReact,
   onRemove,
+  showAll = false,
 }: Props) {
   const [reactions, setReactions] = useState<Reaction[]>(initialReactions);
+
+  useEffect(() => {
+    setReactions(initialReactions);
+  }, [initialReactions]);
 
   const handleReaction = (type: string) => {
     const existing = reactions.find((r) => r.user_id === userId);
@@ -47,14 +53,14 @@ export default function MessageReactionButton({
   // Socketで受け取ったリアクション更新を反映
   useEffect(() => {
     socket.on("reaction_added", (data) => {
-      if (data.message_id === messageId) {
-        setReactions((prev) => [...prev, data]);
+      if (data.message_id === messageId && data.user_id !== userId) {
+        // 他ユーザーによる更新 → fetchReactionsを使う前提なので無処理
       }
     });
 
     socket.on("reaction_removed", (data) => {
-      if (data.message_id === messageId) {
-        setReactions((prev) => prev.filter((r) => r.user_id !== data.user_id));
+      if (data.message_id === messageId && data.user_id !== userId) {
+        // 他ユーザーによる更新 → fetchReactionsを使う前提なので無処理
       }
     });
 
@@ -65,13 +71,16 @@ export default function MessageReactionButton({
   }, [messageId]);
 
   return (
-    <div className="flex gap-2 mt-1 ml-10 z-10">
+    <div className="flex gap-2 mt-1 ml-10 z-10 bg-white p-1 rounded shadow max-w-fit">
       {EMOJIS.map((emoji) => {
         const type = emojiToType(emoji);
         const count = reactions.filter((r) => r.reaction_type === type).length;
         const reacted = reactions.some(
           (r) => r.user_id === userId && r.reaction_type === type
         );
+
+        // 通常時は count があるものだけ表示、showAll が true の時は全表示
+        if (!showAll && count === 0) return null;
 
         return (
           <button

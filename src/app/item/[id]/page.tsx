@@ -96,6 +96,51 @@ export default function ItemPage({ params }: PageProps) {
     }
   };
 
+  // ＝＝＝
+    const [threadExists, setThreadExists] = useState<boolean | null>(null);
+
+    useEffect(() => {
+      if (!id) return;
+      const checkThread = async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${id}`);
+          const data = await res.json();
+          if (data?.thread_id) {
+            setThreadExists(true);
+          } else {
+            setThreadExists(false);
+          }
+        } catch (error) {
+          console.log("スレッド未作成またはエラー", error);
+          setThreadExists(false);
+        }
+      };
+      checkThread();
+    }, [id]);
+  
+    const handleCreateThread = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ item_id: Number(id) }),
+        });
+  
+        if (!res.ok) throw new Error("Thread作成失敗");
+  
+        const data = await res.json();
+        if (data?.thread_id) {
+          setThreadExists(true);
+        }
+      } catch (err) {
+        console.error("Thread作成エラー", err);
+      }
+    };
+
+
+
   return (
     <div>
       {/* スワイプ画像エリア */}
@@ -133,12 +178,56 @@ export default function ItemPage({ params }: PageProps) {
       </div>
 
       {/* コンテンツ表示 */}
-      {currentItemId && tab === "detail" && (
+      {/* ({currentItemId && tab === "detail" && (
         <ItemDetail itemId={currentItemId} />
       )}
+      ) : threadExists === null ? (
+        <p className="p-4">読み込み中...</p>
+      ) : threadExists === false ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="mb-4">このアイテムのチャットはまだ開始されていません。</p>
+            <button
+              onClick={handleCreateThread}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              チャットを開始
+            </button>
+          </div>
+        </div>
+      ) : (
       {currentItemId && tab === "chat" && (
         <ItemChat itemId={currentItemId} />
+        // <ItemChat itemId={id} />
+      )} )  */}
+
+      {/* コンテンツ表示 */}
+      {tab === "detail" && currentItemId && (
+        <ItemDetail itemId={currentItemId} />
       )}
+
+      {tab === "chat" && (
+        threadExists === null ? (
+          <p className="p-4">読み込み中...</p>
+        ) : threadExists === false ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4">このアイテムのチャットはまだ開始されていません。</p>
+              <button
+                onClick={handleCreateThread}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                チャットを開始
+              </button>
+            </div>
+          </div>
+        ) : (
+          currentItemId && <ItemChat itemId={currentItemId} />
+        )
+      )}
+
+
+
     </div>
   );
 }
