@@ -22,9 +22,10 @@ import SearchPopup from "./RAG/SearchPopup";
 
 interface ItemChatProps {
   itemId: string;
+  userId: number;
 }
 
-export default function ItemChat({ itemId }: ItemChatProps) {
+export default function ItemChat({ itemId, userId }: ItemChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [attachmentsMap, setAttachmentsMap] = useState<Record<number, Attachment[]>>({});
   const [input, setInput] = useState("");
@@ -33,7 +34,8 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // const currentUserId = 14;    //暫定対応
-  const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
+  // const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
+  const [currentUserId, setCurrentUserId] = useState(userId); 
 
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);

@@ -116,7 +116,7 @@ export default function ItemPage({ params }: PageProps) {
         }
       };
       checkThread();
-    }, [id]);
+    }, [currentItemId]);            // （備忘！！デプロイうまくいったら次回で削除）id⇒currentItemIdに変更
   
     const handleCreateThread = async () => {
       try {
@@ -125,7 +125,7 @@ export default function ItemPage({ params }: PageProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ item_id: Number(id) }),
+          body: JSON.stringify({ item_id: Number(currentItemId) }),   // （備忘！！デプロイうまくいったら次回で削除）id⇒currentItemIdに変更
         });
   
         if (!res.ok) throw new Error("Thread作成失敗");
@@ -178,30 +178,6 @@ export default function ItemPage({ params }: PageProps) {
       </div>
 
       {/* コンテンツ表示 */}
-      {/* ({currentItemId && tab === "detail" && (
-        <ItemDetail itemId={currentItemId} />
-      )}
-      ) : threadExists === null ? (
-        <p className="p-4">読み込み中...</p>
-      ) : threadExists === false ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="mb-4">このアイテムのチャットはまだ開始されていません。</p>
-            <button
-              onClick={handleCreateThread}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              チャットを開始
-            </button>
-          </div>
-        </div>
-      ) : (
-      {currentItemId && tab === "chat" && (
-        <ItemChat itemId={currentItemId} />
-        // <ItemChat itemId={id} />
-      )} )  */}
-
-      {/* コンテンツ表示 */}
       {tab === "detail" && currentItemId && (
         <ItemDetail itemId={currentItemId} />
       )}
@@ -222,7 +198,9 @@ export default function ItemPage({ params }: PageProps) {
             </div>
           </div>
         ) : (
-          currentItemId && <ItemChat itemId={currentItemId} />
+          currentItemId && userId !== undefined && (
+          <ItemChat itemId={currentItemId} userId={userId}/>
+          )
         )
       )}
 
