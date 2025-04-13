@@ -1,9 +1,21 @@
+// export const formatTime = (dateString: string) => {
+//     const date = new Date(dateString);
+//     const hours = date.getHours();
+//     const minutes = String(date.getMinutes()).padStart(2, "0");
+//     return `${hours}:${minutes}`;
+//   };
+
+
 export const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Tokyo",
   };
+  return date.toLocaleTimeString("ja-JP", options);
+};
   
   export const isSameDay = (date1: string, date2: string) => {
     const d1 = new Date(date1);
