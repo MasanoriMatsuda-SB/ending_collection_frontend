@@ -142,7 +142,7 @@ export default function ItemPage({ params }: PageProps) {
 
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col bg-white px-6">
       {/* スワイプ画像エリア */}
       <div
         className="flex overflow-x-auto space-x-4 p-4"
