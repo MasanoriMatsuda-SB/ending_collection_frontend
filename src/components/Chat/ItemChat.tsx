@@ -2,7 +2,6 @@
 
 import { Message, Attachment } from "@/types/chat"
 import { useEffect, useRef, useState } from "react";
-// import io from "socket.io-client";
 import socket from "@/lib/socket";
 import { formatTime, isSameDay } from "@/lib/utils";
 
@@ -16,11 +15,17 @@ import MessageInputArea from "./MessageInputArea"
 import MessageReactionButton from "./MessageReactionButton";
 import { MessageReaction } from "@/types/chat";
 
+// 以下RAG用
+import SummaryPopup from "./RAG/SummaryPopup";
+import SearchPopup from "./RAG/SearchPopup";
+
+
 interface ItemChatProps {
   itemId: string;
+  userId: number;
 }
 
-export default function ItemChat({ itemId }: ItemChatProps) {
+export default function ItemChat({ itemId, userId }: ItemChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [attachmentsMap, setAttachmentsMap] = useState<Record<number, Attachment[]>>({});
   const [input, setInput] = useState("");
@@ -29,7 +34,8 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // const currentUserId = 14;    //暫定対応
-  const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
+  // const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
+  const [currentUserId, setCurrentUserId] = useState(userId); 
 
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
@@ -64,30 +70,37 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         })
       );
       setAttachmentsMap(allAttachments);
+
+      await fetchReactions(data);
+
     } catch (err) {
       console.error("メッセージ取得失敗", err);
     }
   };
 
-  const fetchReactions = async () => {
+  const fetchReactions = async (msgs: Message[] = messages) => {
     const all: Record<number, MessageReaction[]> = {};
-    for (const msg of messages) {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
-      const data = await res.json();
-      all[msg.message_id] = data;
-    }
+      // 並列化する
+    await Promise.all(
+      msgs.map(async (msg) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
+        const data = await res.json();
+        all[msg.message_id] = data;
+      })
+    );
     setReactionsMap(all);
   };
   
+  // 以下RAG用
+  const [showSummary, setShowSummary] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+
+
+
 
   useEffect(() => {
     fetchMessages();
   }, [itemId]);
-
-  useEffect(() => {
-    fetchReactions();
-  }, [messages]);
-  
 
   useEffect(() => {
     socket.on("receive_message", (msg: Message) => {
@@ -193,6 +206,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   };
   
   const handleReact = async (messageId: number, type: string) => {
+    setSelectedMessage(null);
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -202,6 +216,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
   };
   
   const handleRemove = async (messageId: number) => {
+    setSelectedMessage(null);
     await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/reactions?message_id=${messageId}&user_id=${currentUserId}`,
       { method: "DELETE" }
@@ -250,7 +265,20 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                 formatTime={formatTime}
               />
               
-              {/*リアクションボタン */}
+              {(reactionsMap[msg.message_id]?.length ?? 0) > 0 && (
+                <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
+                  <MessageReactionButton
+                    messageId={msg.message_id}
+                    userId={currentUserId}
+                    initialReactions={reactionsMap[msg.message_id] || []}
+                    onReact={(type) => handleReact(msg.message_id, type)}
+                    onRemove={() => handleRemove(msg.message_id)}
+                    showAll={false}
+                  />
+                </div>
+              )}
+
+              {/* 右クリック時のみ全リアクション選択表示 */}
               {selectedMessage?.message_id === msg.message_id && (
                 <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
                   <MessageReactionButton
@@ -259,6 +287,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
                     initialReactions={reactionsMap[msg.message_id] || []}
                     onReact={(type) => handleReact(msg.message_id, type)}
                     onRemove={() => handleRemove(msg.message_id)}
+                    showAll={true} // ← すべてのリアクション表示
                   />
                 </div>
               )}
@@ -285,7 +314,7 @@ export default function ItemChat({ itemId }: ItemChatProps) {
           }
         }}
       />
-
+      
       {/* メッセージ入力エリア */}
       <MessageInputArea
         input={input}
@@ -301,11 +330,32 @@ export default function ItemChat({ itemId }: ItemChatProps) {
         fetchMessages={fetchMessages}
       />
       
+
+      {/* 要約・検索ボタン （RAG用）*/}
+      <div className="flex gap-2 mt-5 ml-1">
+        <button
+          onClick={() => setShowSummary(true)}
+          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          要約
+        </button>
+        <button
+          onClick={() => setShowSearch(true)}
+          className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          検索
+        </button>
+      </div>
+      
       {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
       <DevUserSwitcher
         currentUserId={currentUserId}
         setCurrentUserId={setCurrentUserId}
       />
+
+      {/* 要約・検索ポップアップ */}
+      {showSummary && <SummaryPopup onClose={() => setShowSummary(false)} itemId={itemId} />}
+      {showSearch && <SearchPopup onClose={() => setShowSearch(false)} itemId={itemId} />}
 
     </div>
   );

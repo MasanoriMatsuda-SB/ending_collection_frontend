@@ -69,8 +69,11 @@ export default function HomePage() {
             >
               追加
             </button>
-            <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-              機能B
+            <button
+              onClick={() => router.push('/home')}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+              >
+              ホーム
             </button>
             <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
               機能C

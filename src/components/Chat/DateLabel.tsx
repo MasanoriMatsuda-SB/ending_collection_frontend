@@ -6,6 +6,7 @@ interface DateLabelProps {
 
 export default function DateLabel({ dateString }: DateLabelProps) {
   const formatted = new Date(dateString).toLocaleDateString("ja-JP", {
+    timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "long",
     day: "numeric",
