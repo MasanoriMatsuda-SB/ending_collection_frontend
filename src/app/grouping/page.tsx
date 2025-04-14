@@ -1,3 +1,5 @@
+// app/grouping/page.tsx
+
 'use client';
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
@@ -11,21 +13,36 @@ export default function GroupingPage() {
 
   const handleCreateGroup = async () => {
     try {
+      const token = localStorage.getItem('token'); //token を localStorage から取得
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/grouping`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // JWTトークンをバックエンドに送りトークンからuser_idを取り出せるようにする
         },
         body: JSON.stringify({ groupName }),
       });
 
-      if (!res.ok) throw new Error('作成に失敗しました');
+      // レスポンスボディを読み取って判断
+      const result = await res.json();
+
+      // ログイントークンが期限切れの時にログイン画面に遷移させる
+      if (!res.ok) {
+        if (res.status === 401 || result.detail?.includes("認証情報が見つかりません")) {
+          // JWTが期限切れなどで無効なとき
+          localStorage.removeItem('token');       // トークン削除
+          alert('ログインの有効期限が切れています。再度ログインしてください。');
+          router.push('/login');                  // ログイン画面へ遷移
+          return;
+        }
+        throw new Error('作成に失敗しました');
+      }
 
       // 成功したらfinishページに遷移
       router.push(`/grouping/finish?groupName=${encodeURIComponent(groupName)}`);
     } catch (err) {
       console.error('作成エラー:', err);
-      alert('グループの作成に失敗しました');
+      alert(err.message || 'グループの作成に失敗しました');
     }
   };
 
