@@ -1,3 +1,4 @@
+// src/app/invitation/page.tsx
 'use client';
 
 import { useAuth } from '@/lib/AuthContext';

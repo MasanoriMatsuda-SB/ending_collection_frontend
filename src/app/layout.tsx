@@ -16,7 +16,7 @@ export default function RootLayout({
       <body>
       <AuthProvider>
           <nav className="p-4 bg-gray-100 text-black">
-            <Link href="/">Home</Link> |{' '}
+            <Link href="/">TOP</Link> |{' '}
             <Link href="/login">Login</Link> |{' '}
             <Link href="/signup">Signup</Link> |{' '}
             <Link href="/signup/finish">SignupFinish</Link> |{' '}
@@ -24,7 +24,9 @@ export default function RootLayout({
             <Link href="/grouping/finish">GroupingFinish</Link> |{' '}
             <Link href="/invite">Invite</Link> |{' '}
             <Link href="/invitation">Invitation</Link> |{' '}
-            {/* <Link href="/item/[id]">item</Link> 動的にidを取ってきたいができていないです*/}
+            <Link href="/home">Home</Link> |{' '}
+            <Link href="/post">Item</Link> |{' '}
+            <Link href="/post/finish">ItemFinish</Link> |{' '}
           </nav>
           <div className="bg-white lg:bg-yellow-50 text-[#212121]">
             <div className="max-w-[744px] mx-auto px-4">

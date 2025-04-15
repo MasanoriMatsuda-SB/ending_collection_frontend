@@ -41,8 +41,13 @@ export default function GroupingPage() {
       // 成功したらfinishページに遷移
       router.push(`/grouping/finish?groupName=${encodeURIComponent(groupName)}`);
     } catch (err) {
-      console.error('作成エラー:', err);
-      alert(err.message || 'グループの作成に失敗しました');
+      if (err instanceof Error) {
+        console.error('作成エラー:', err);
+        alert(err.message);
+      } else {
+        console.error('作成エラー:', err);
+        alert('グループの作成に失敗しました');
+      }
     }
   };
 
