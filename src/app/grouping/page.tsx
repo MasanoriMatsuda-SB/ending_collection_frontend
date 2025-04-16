@@ -9,9 +9,13 @@ import Button from "@/components/Button";
 export default function GroupingPage() {
     const { user } = useAuth();
     const [groupName, setGroupName] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
   const handleCreateGroup = async () => {
+    if (isSubmitting) return; // 多重送信防止
+
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token'); //token を localStorage から取得
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/grouping`, {
@@ -35,7 +39,8 @@ export default function GroupingPage() {
           router.push('/login');                  // ログイン画面へ遷移
           return;
         }
-        throw new Error('作成に失敗しました');
+        alert(result.detail || 'グループの作成に失敗しました');
+        return;
       }
 
       // 成功したらfinishページに遷移
@@ -48,6 +53,8 @@ export default function GroupingPage() {
         console.error('作成エラー:', err);
         alert('グループの作成に失敗しました');
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
