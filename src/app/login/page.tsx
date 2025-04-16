@@ -49,8 +49,17 @@ export default function LoginPage() {
       localStorage.setItem('token', data.access_token);
       refreshUser();
 
-      // ここで招待URL経由であれば/invitationに遷移するように条件分岐追加してください
-      router.push('/');
+      // 招待リンク経由かどうかチェックしてリダイレクト先を分岐
+      const searchParams = new URLSearchParams(window.location.search);
+      const fromInvitation = searchParams.get('fromInvitation');
+      const token = searchParams.get('token');
+
+      if (fromInvitation === '1' && token) {
+        router.push(`/invitation?token=${token}`);
+      } else {
+        router.push('/');
+      }
+
     } catch (err: unknown) {
       console.error('Login error:', err);
       setError('エラーが発生しました');

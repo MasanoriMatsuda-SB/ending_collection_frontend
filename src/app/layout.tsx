@@ -16,7 +16,11 @@ export default function RootLayout({
       <body>
       <AuthProvider>
           <nav className="p-4 bg-gray-100 text-black">
-            <Link href="/">TOP</Link> |{' '}
+          <Link href="/">トップ</Link> |{' '}
+          <Link href="/home">ホーム</Link> |{' '}
+          <Link href="/post">アイテム投稿</Link> |{' '}
+          <Link href="/invite">メンバー招待</Link>
+            {/* <Link href="/">TOP</Link> |{' '}
             <Link href="/login">Login</Link> |{' '}
             <Link href="/signup">Signup</Link> |{' '}
             <Link href="/signup/finish">SignupFinish</Link> |{' '}
@@ -26,7 +30,7 @@ export default function RootLayout({
             <Link href="/invitation">Invitation</Link> |{' '}
             <Link href="/home">Home</Link> |{' '}
             <Link href="/post">Item</Link> |{' '}
-            <Link href="/post/finish">ItemFinish</Link> |{' '}
+            <Link href="/post/finish">ItemFinish</Link> |{' '} */}
           </nav>
           <div className="bg-white lg:bg-yellow-50 text-[#212121]">
             <div className="max-w-[744px] mx-auto px-4">
