@@ -31,13 +31,24 @@ interface BatchItem {
   selected: boolean;
 }
 
+// バッチ検出結果の型
+interface YoloDetectResult {
+  id: number;
+  crop_image_url: string;
+}
+
+// 画像解析結果の型
+interface AnalyzeResult {
+  detected_name: string;
+}
+
 export default function PostPage() {
   return <PostPageContent />;
 }
 
 function PostPageContent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"single" | "batch">("single");
+  const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [itemName, setItemName] = useState('');
@@ -85,7 +96,7 @@ function PostPageContent() {
             <option key={cat.category_id} value={cat.category_id}>
               {`${'　'.repeat(level)}${cat.category_name}`}
             </option>,
-            ...renderCategoryOptions(cat.category_id, level + 1)
+            ...renderCategoryOptions(cat.category_id, level + 1),
           ]
         : []
     );
@@ -95,17 +106,17 @@ function PostPageContent() {
   const handleImageSelect = async (file: File) => {
     setSelectedImage(file);
     setPreviewUrl(URL.createObjectURL(file));
-    setItemName("アイテム名推測中…");
+    setItemName('アイテム名推測中…');
     try {
       const fm = new FormData();
       fm.append('image', file);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/openai_analyze`, {
         method: 'POST',
-        body: fm
+        body: fm,
       });
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      setItemName(data.detected_name);
+      const result = (await res.json()) as AnalyzeResult;
+      setItemName(result.detected_name);
     } catch {
       setError('画像の解析中にエラーが発生しました');
     }
@@ -124,9 +135,18 @@ function PostPageContent() {
   // シングル送信
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setIsLoading(true);
-    if (!userId) { setError('ログインユーザー情報が取得できません'); setIsLoading(false); return; }
-    if (!selectedImage) { setError('画像を選択してください'); setIsLoading(false); return; }
+    setError('');
+    setIsLoading(true);
+    if (!userId) {
+      setError('ログインユーザー情報が取得できません');
+      setIsLoading(false);
+      return;
+    }
+    if (!selectedImage) {
+      setError('画像を選択してください');
+      setIsLoading(false);
+      return;
+    }
     try {
       const fm = new FormData();
       fm.append('image', selectedImage);
@@ -154,18 +174,19 @@ function PostPageContent() {
       const fm = new FormData();
       fm.append('image', file);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/yolo_detect`, {
-        method: 'POST', body: fm
+        method: 'POST',
+        body: fm,
       });
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      const items: BatchItem[] = data.map((det: any) => ({
+      const data = (await res.json()) as YoloDetectResult[];
+      const items: BatchItem[] = data.map(det => ({
         id: det.id,
         cropImageUrl: det.crop_image_url,
         itemName: '',
         category: '',
         condition: '',
         memo: '',
-        selected: false
+        selected: false,
       }));
       setBatchItems(items);
       items.forEach((it, i) => analyzeBatchItemName(i, it.cropImageUrl));
@@ -182,36 +203,54 @@ function PostPageContent() {
     setIsCameraOpen(false);
   };
 
-  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: any) => {
-    setBatchItems(bs => bs.map((b, i) => i===idx ? { ...b, [field]: val } : b));
+  // バッチアイテム更新
+  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: string | boolean) => {
+    setBatchItems(bs => bs.map((b, i) => (i === idx ? { ...b, [field]: val } : b)));
   };
+
+  // バッチ用解析
   const analyzeBatchItemName = async (idx: number, url: string) => {
     updateBatchItemField(idx, 'itemName', 'アイテム名推測中…');
     try {
       const proxy = `${process.env.NEXT_PUBLIC_API_URL}/proxy_image?url=${encodeURIComponent(url)}`;
       const blob = await (await fetch(proxy)).blob();
       const file = new File([blob], 'crop.jpg', { type: blob.type });
-      const fm = new FormData(); fm.append('image', file);
+      const fm = new FormData();
+      fm.append('image', file);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/openai_analyze`, {
-        method: 'POST', body: fm
+        method: 'POST',
+        body: fm,
       });
-      if (res.ok) {
-        const d = await res.json();
-        updateBatchItemField(idx, 'itemName', d.detected_name);
-      }
-    } catch { /* ignore */ }
+      if (!res.ok) throw new Error();
+      const result = (await res.json()) as AnalyzeResult;
+      updateBatchItemField(idx, 'itemName', result.detected_name);
+    } catch {
+      // ignore
+    }
   };
 
+  // バッチ送信
   const handleBatchSubmit = async () => {
-    setError(''); setIsLoading(true);
-    if (!userId) { setError('ログインユーザー情報が取得できません'); setIsLoading(false); return; }
+    setError('');
+    setIsLoading(true);
+    if (!userId) {
+      setError('ログインユーザー情報が取得できません');
+      setIsLoading(false);
+      return;
+    }
     const toSend = batchItems.filter(b => b.selected);
-    if (toSend.length === 0) { setError('1件以上選択してください'); setIsLoading(false); return; }
+    if (toSend.length === 0) {
+      setError('1件以上選択してください');
+      setIsLoading(false);
+      return;
+    }
     try {
       for (const b of toSend) {
-        const proxy = `${process.env.NEXT_PUBLIC_API_URL}/proxy_image?url=${encodeURIComponent(b.cropImageUrl)}`;
+        const proxy = `${process.env.NEXT_PUBLIC_API_URL}/proxy_image?url=${encodeURIComponent(
+          b.cropImageUrl
+        )}`;
         const blob = await (await fetch(proxy)).blob();
-        const file = new File([blob], 'batch.jpg', { type: blob.type });
+        const file = new File([blob], 'batch_item.jpg', { type: blob.type });
         const fm = new FormData();
         fm.append('image', file);
         fm.append('item_name', b.itemName);
@@ -221,7 +260,8 @@ function PostPageContent() {
         fm.append('group_id', '1');
         fm.append('user_id', String(userId));
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items`, {
-          method: 'POST', body: fm
+          method: 'POST',
+          body: fm,
         });
         if (!res.ok) throw new Error();
       }
@@ -236,8 +276,8 @@ function PostPageContent() {
   const isBatchItemSelectable = (b: BatchItem) => b.itemName && b.category && b.condition;
   const canBatchSubmit = batchItems.some(b => b.selected);
 
-  // タブ切替時リセット
-  const switchTab = (tab: "single" | "batch") => {
+  // タブ切替時にリセット
+  const switchTab = (tab: 'single' | 'batch') => {
     setActiveTab(tab);
     setSelectedImage(null);
     setPreviewUrl(null);
@@ -255,22 +295,31 @@ function PostPageContent() {
         {/* タブ切替 */}
         <div className="flex mb-4 border-b border-gray-300">
           <button
-            onClick={() => switchTab("single")}
-            className={`px-4 py-2 focus:outline-none ${activeTab==="single" ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-600'}`}
+            onClick={() => switchTab('single')}
+            className={`px-4 py-2 focus:outline-none ${
+              activeTab === 'single'
+                ? 'border-b-2 border-green-600 text-green-600'
+                : 'text-gray-600'
+            }`}
           >
             一つずつ追加
           </button>
           <button
-            onClick={() => switchTab("batch")}
-            className={`px-4 py-2 focus:outline-none ${activeTab==="batch" ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-600'}`}
+            onClick={() => switchTab('batch')}
+            className={`px-4 py-2 focus:outline-none ${
+              activeTab === 'batch'
+                ? 'border-b-2 border-green-600 text-green-600'
+                : 'text-gray-600'
+            }`}
           >
             まとめて追加
           </button>
         </div>
 
         <div className="min-h-[660px]">
-          {activeTab==="single" && (
+          {activeTab === 'single' && (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 画像 */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">画像</label>
                 <div className="flex gap-4">
@@ -296,7 +345,7 @@ function PostPageContent() {
                       className="hidden"
                     />
                     <p className="mt-2 text-sm text-gray-500">
-                      {selectedImage ? selectedImage.name : "選択されていません"}
+                      {selectedImage ? selectedImage.name : '選択されていません'}
                     </p>
                   </div>
                 </div>
@@ -383,7 +432,7 @@ function PostPageContent() {
             </form>
           )}
 
-          {activeTab === "batch" && (
+          {activeTab === 'batch' && (
             <div className="space-y-6">
               {/* まとめて追加タブ：画像 */}
               <div>
@@ -411,7 +460,7 @@ function PostPageContent() {
                       className="hidden"
                     />
                     <p className="mt-2 text-sm text-gray-500">
-                      {selectedImage ? selectedImage.name : "選択されていません"}
+                      {selectedImage ? selectedImage.name : '選択されていません'}
                     </p>
                   </div>
                 </div>
@@ -432,7 +481,7 @@ function PostPageContent() {
                           type="checkbox"
                           disabled={!isBatchItemSelectable(item)}
                           checked={item.selected}
-                          onChange={e => updateBatchItemField(index, "selected", e.target.checked)}
+                          onChange={e => updateBatchItemField(index, 'selected', e.target.checked)}
                           className="form-checkbox h-6 w-6 text-green-600"
                         />
                       </div>
@@ -448,7 +497,7 @@ function PostPageContent() {
                         <input
                           type="text"
                           value={item.itemName}
-                          onChange={e => updateBatchItemField(index, "itemName", e.target.value)}
+                          onChange={e => updateBatchItemField(index, 'itemName', e.target.value)}
                           className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
                         />
                       </div>
@@ -456,8 +505,8 @@ function PostPageContent() {
                         <label className="block text-sm font-medium text-gray-900">カテゴリー</label>
                         <select
                           value={item.category}
-                          onChange={e => updateBatchItemField(index, "category", e.target.value)}
-                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
+                          onChange={e => updateBatchItemField(index, 'category', e.target.value)}
+                          className="w-full mt-1 px-3 py-2 border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus;border-green-500"
                         >
                           <option value="">選択してください</option>
                           {renderCategoryOptions()}
@@ -467,8 +516,8 @@ function PostPageContent() {
                         <label className="block text-sm font-medium text-gray-900">状態</label>
                         <select
                           value={item.condition}
-                          onChange={e => updateBatchItemField(index, "condition", e.target.value)}
-                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
+                          onChange={e => updateBatchItemField(index, 'condition', e.target.value)}
+                          className="w-full mt-1 px-3 py-2	border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
                         >
                           <option value="">選択してください</option>
                           <option value="S">S：新品、未使用</option>
@@ -479,13 +528,13 @@ function PostPageContent() {
                         </select>
                       </div>
                       <div className="mb-2">
-                        <label className="block text-sm font-medium text-gray-900">メモ</label>
+                        <label className="block	text-sm font-medium text-gray-900">メモ</label>
                         <textarea
                           value={item.memo}
-                          onChange={e => updateBatchItemField(index, "memo", e.target.value)}
-                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus;border-green-500"
+                          onChange={e => updateBatchItemField(index, 'memo', e.target.value)}
+                          className="w-full mt-1 px-3 py-2	border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus;border-green-500"
                           rows={3}
-                          placeholder="アイテムについての説明や思い出を入力してください"
+                          placeholder="説明を入力してください"
                         />
                       </div>
                     </div>
@@ -494,7 +543,7 @@ function PostPageContent() {
                     onClick={handleBatchSubmit}
                     disabled={isLoading || !canBatchSubmit}
                     className={`w-full py-3 px-4 rounded-full text-white font-bold transition ${
-                      (isLoading || !canBatchSubmit)
+                      isLoading || !canBatchSubmit
                         ? 'bg-[#A8956F] cursor-not-allowed opacity-50'
                         : 'bg-[#7B6224] hover:bg-[#A8956F]'
                     }`}
@@ -518,7 +567,7 @@ function PostPageContent() {
       <CameraModal
         isOpen={isCameraOpen}
         onClose={() => setIsCameraOpen(false)}
-        onCapture={activeTab === "single" ? handleCameraCapture : handleBatchCameraCapture}
+        onCapture={activeTab === 'single' ? handleCameraCapture : handleBatchCameraCapture}
       />
     </div>
   );
