@@ -8,13 +8,14 @@ import { jwtDecode } from 'jwt-decode'
 type JwtPayload = { user_id: number }
 
 type Item = {
-    item_id: number
-    item_name: string
-    updated_at: string
-    images: { image_url: string }[]
-    latest_message_time?: string
-    status?: string | null
-    description?: string
+    item_id: number;
+    item_name: string;
+    updated_at: string;
+    images: { image_url: string }[];
+    latest_message_time?: string;
+    latest_message_text?: string;
+    status?: string | null;
+    description?: string;
 }
 
 type SortKey = 'updated_desc' | 'updated_asc' | 'message_desc'
@@ -25,7 +26,6 @@ export default function HomePage() {
         localStorage.removeItem('token')
         router.push('/login')
     }
-    const [itemIds, setItemIds] = useState<string[]>([])
     const [items, setItems] = useState<Item[]>([])
     const [isWide, setIsWide] = useState(false)
     const [userId, setUserId] = useState<number | null>(null)
@@ -113,7 +113,7 @@ export default function HomePage() {
         const normalize = (text: string) => text.normalize('NFKC').toLowerCase()
         const searchFiltered = statusFiltered.filter(item => {
             const q = normalize(searchQuery)
-            return [item.item_name, item.description ?? '', (item as any).latest_message_text ?? '']
+            return [item.item_name, item.description ?? '', item.latest_message_text ?? '']
                 .map(normalize)
                 .some(val => val.includes(q))
         })
