@@ -21,13 +21,18 @@ type Item = {
 type SortKey = 'updated_desc' | 'updated_asc' | 'message_desc'
 type FilterKey = 'all' | 'active' | 'archived' | 'none'
 
+type Group = {
+    group_id: number;
+    group_name: string;
+}
+
 export default function HomePage() {
     const handleLogout = () => {
         localStorage.removeItem('token')
         router.push('/login')
     }
     const [items, setItems] = useState<Item[]>([])
-    const [isWide, setIsWide] = useState(false)
+    const [, setIsWide] = useState(false)
     const [userId, setUserId] = useState<number | null>(null)
     const [groupList, setGroupList] = useState<{ group_id: number; group_name: string }[]>([])
     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null)
@@ -56,9 +61,9 @@ export default function HomePage() {
 
         const fetchGroups = async () => {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${uid}/groups`)
-            const data = await res.json()
+            const data: Group[] = await res.json()
             setGroupList(data)
-            const maxId = data.reduce((max: number, g: any) => Math.max(max, g.group_id), 0)
+            const maxId = data.reduce((max: number, g: Group) => Math.max(max, g.group_id), 0)
             setSelectedGroupId(maxId)
         }
         fetchGroups()

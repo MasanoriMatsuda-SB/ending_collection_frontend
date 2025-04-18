@@ -1,5 +1,4 @@
 // src/app/layout.tsx
-import Link from 'next/link';
 import '../app/globals.css';
 import { AuthProvider } from '@/lib/AuthContext';
 

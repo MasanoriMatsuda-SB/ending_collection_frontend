@@ -20,6 +20,10 @@ type JwtPayload = {
   user_id: number;
 };
 
+type ItemData = {
+  item_id: number;
+};
+
 export default function ItemPage({ params }: PageProps) {
   const { id } = use(params); // URLのitem_id
   const router = useRouter();
@@ -44,8 +48,8 @@ export default function ItemPage({ params }: PageProps) {
 
     const fetchItemIdsByGroup = async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/group/${groupId}`);
-      const data = await res.json();
-      const ids = data.map((item: any) => String(item.item_id));
+      const data: ItemData[] = await res.json();
+      const ids = data.map(item => String(item.item_id));
       setItemIds(ids);
       const index = ids.indexOf(id);
       setCurrentIndex(index >= 0 ? index : 0);
