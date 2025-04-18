@@ -14,8 +14,8 @@ export default function RootLayout({
         <title>meme mori</title>
       </head>
       <body>
-      <AuthProvider>
-          <nav className="p-4 bg-gray-100 text-black">
+        <AuthProvider>
+          {/* <nav className="p-4 bg-gray-100 text-black">
             <Link href="/">TOP</Link> |{' '}
             <Link href="/login">Login</Link> |{' '}
             <Link href="/signup">Signup</Link> |{' '}
@@ -27,7 +27,7 @@ export default function RootLayout({
             <Link href="/home">Home</Link> |{' '}
             <Link href="/post">Item</Link> |{' '}
             <Link href="/post/finish">ItemFinish</Link> |{' '}
-          </nav>
+          </nav> */}
           <div className="bg-white lg:bg-yellow-50 text-[#212121]">
             <div className="max-w-[744px] mx-auto px-4">
               <main>{children}</main>
