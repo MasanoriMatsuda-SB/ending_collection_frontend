@@ -35,7 +35,7 @@ export default function HomePage() {
         const { user_id } = jwtDecode<JwtPayload>(token)
         setUserId(user_id)
       } catch {
-        // invalid token
+        // invalid
       }
     }
     setLoading(false)
@@ -60,7 +60,8 @@ export default function HomePage() {
           alt="Cover Icon"
           width={300}
           height={300}
-          className="mb-6"
+          className="mb-6 cursor-pointer"
+          onClick={() => router.push('/')}
         />
         <div className="space-y-4">
           <Button title="新規アカウント作成" href="/signup" variant="main" />
@@ -114,15 +115,12 @@ function AuthenticatedHome({
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/groups`)
       const data: Group[] = await res.json()
       setGroupList(data)
-      // localStorage の既存値を取得
+
       const stored = localStorage.getItem('selectedGroupId')
       const storedId = stored ? Number(stored) : null
-      // デフォルト候補は最小の group_id
       const minId = data.reduce((m, g) => Math.min(m, g.group_id), data[0]?.group_id ?? 0)
-      // 最終的な選択ID
       const initial = data.some(g => g.group_id === storedId) ? storedId : minId
       setSelectedGroupId(initial)
-      // localStorage に保存
       localStorage.setItem('selectedGroupId', String(initial))
     }
     fetchGroups()
@@ -135,6 +133,11 @@ function AuthenticatedHome({
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // isWideが変わったときにもログ
+  useEffect(() => {
+    console.log('isWide →', isWide)
+  }, [isWide])
 
   // ── アイテム取得 ──
   useEffect(() => {
@@ -204,7 +207,7 @@ function AuthenticatedHome({
       }
       document.addEventListener('mousedown', outside)
       return () => document.removeEventListener('mousedown', outside)
-    }, [showSelector, showGroupList])
+    }, [])
     return (
       <div className="relative flex justify-end" ref={ref}>
         <button onClick={() => setShowSelector(v => !v)} className="text-2xl font-bold px-2">
@@ -213,7 +216,10 @@ function AuthenticatedHome({
         {showSelector && (
           <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow z-50">
             <div
-              onClick={() => { setShowSelector(false); router.push('/invite') }}
+              onClick={() => {
+                setShowSelector(false)
+                router.push('/invite')
+              }}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
             >
               メンバーを招待する
@@ -226,20 +232,21 @@ function AuthenticatedHome({
                 グループを変更する
               </div>
             )}
-            {showGroupList && groupList.map(g => (
-              <div
-                key={g.group_id}
-                onClick={() => {
-                  setSelectedGroupId(g.group_id)
-                  localStorage.setItem('selectedGroupId', String(g.group_id))
-                  setShowSelector(false)
-                  setShowGroupList(false)
-                }}
-                className="px-4 py-2 hover:bg-gray-100	cursor-pointer border-t"
-              >
-                {g.group_name}
-              </div>
-            ))}
+            {showGroupList &&
+              groupList.map(g => (
+                <div
+                  key={g.group_id}
+                  onClick={() => {
+                    setSelectedGroupId(g.group_id)
+                    localStorage.setItem('selectedGroupId', String(g.group_id))
+                    setShowSelector(false)
+                    setShowGroupList(false)
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-t"
+                >
+                  {g.group_name}
+                </div>
+              ))}
           </div>
         )}
       </div>
@@ -274,7 +281,7 @@ function AuthenticatedHome({
           </p>
           <MenuComponent />
         </div>
-        <div className="flex gap-2 items-center flex-wrap text-[16px]	mt-6">
+        <div className="flex gap-2 items-center flex-wrap text-[16px] mt-6">
           <select
             value={filterKey}
             onChange={e => setFilterKey(e.target.value as FilterKey)}
@@ -304,7 +311,11 @@ function AuthenticatedHome({
       </div>
 
       {/* メイン */}
-      <main className="flex-1 overflow-y-auto bg-white px-2 py-4 space-y-4">
+      <main
+        className={`flex-1 overflow-y-auto bg-white py-4 space-y-4 ${
+          isWide ? 'px-4' : 'px-2'
+        }`}
+      >
         <div
           className="grid gap-2"
           style={{
@@ -317,7 +328,9 @@ function AuthenticatedHome({
               key={item.item_id}
               className="w-[120px] h-[160px] flex flex-col items-start cursor-pointer"
               onClick={() =>
-                router.push(`/item/${item.item_id}?user_id=${userId}&group_id=${selectedGroupId}`)
+                router.push(
+                  `/item/${item.item_id}?user_id=${userId}&group_id=${selectedGroupId}`
+                )
               }
             >
               <img
@@ -337,7 +350,7 @@ function AuthenticatedHome({
       </main>
 
       {/* フッター */}
-      <footer className="sticky bottom-0 w-full h-[106px] bg-white	border-t border-[#F2F2F2] z-50">
+      <footer className="sticky bottom-0 w-full h-[106px] bg-white border-t border-[#F2F2F2] z-50">
         <div className="absolute top-1.5 left-0 w-full flex justify-around">
           {tabs.map(({ key, label, on, off, path }) => (
             <div
@@ -345,11 +358,11 @@ function AuthenticatedHome({
               className="flex flex-col items-center w-[72px] h-[72px] justify-center cursor-pointer"
               onClick={() => router.push(path)}
             >
-              <Image src={activeTab===key ? on : off} alt={label} width={60} height={60} />
+              <Image src={activeTab === key ? on : off} alt={label} width={60} height={60} />
             </div>
           ))}
         </div>
-        <div className="absolute bottom-2	left-1/2 transform -translate-x-1/2 w-[134px]	h-[5px] bg-black rounded-full" />
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-[134px] h-[5px] bg-black rounded-full" />
       </footer>
     </div>
   )

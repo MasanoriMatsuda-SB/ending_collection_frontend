@@ -1,166 +1,137 @@
-'use client'
-
-import { use } from 'react'
-import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { jwtDecode } from 'jwt-decode'
-import ItemDetail from '@/components/ItemDetail'
-import ItemChat from '@/components/Chat/ItemChat'
+"use client";
+import { use } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import ItemDetail from "@/components/ItemDetail";
+import ItemChat from "@/components/Chat/ItemChat";
 
 type PageProps = {
-  params: Promise<{ id: string }>
-}
+  params: Promise<{ id: string }>;
+};
 
 type ItemImage = {
-  image_id: number
-  item_id: number
-  image_url: string
-}
+  image_id: number;
+  item_id: number;
+  image_url: string;
+};
 
 type JwtPayload = {
-  user_id: number
-}
+  user_id: number;
+};
 
 type ItemData = {
-  item_id: number
-}
+  item_id: number;
+};
 
 export default function ItemPage({ params }: PageProps) {
-  const { id } = use(params) // URL の item_id
-  const router = useRouter()
+  const { id } = use(params); // URLのitem_id
+  const router = useRouter();
 
-  const [tab, setTab] = useState<'detail' | 'chat'>('detail')
-  const [itemIds, setItemIds] = useState<string[]>([])
-  const [currentIndex, setCurrentIndex] = useState<number>(0)
-  const [images, setImages] = useState<ItemImage[]>([])
-  const [threadExists, setThreadExists] = useState<boolean | null>(null)
+  const [tab, setTab] = useState<"detail" | "chat">("detail");
+  const [itemIds, setItemIds] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [images, setImages] = useState<ItemImage[]>([]);
+  const [threadExists, setThreadExists] = useState<boolean | null>(null);
 
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  const decoded = token ? jwtDecode<JwtPayload>(token) : null
-  const userId = decoded?.user_id
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
+  const userId = decoded?.user_id;
 
-  const searchParams = useSearchParams()
-  const groupId = searchParams.get('group_id')
-  const passedUserId = searchParams.get('user_id')
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get("group_id");
+  const passedUserId = searchParams.get("user_id");
 
-  // group_id に該当する item_id 一覧取得
+  // group_idに該当するitem_id一覧取得
   useEffect(() => {
-    if (!groupId) return
+    if (!groupId) return;
 
     const fetchItemIdsByGroup = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/items/group/${groupId}`
-      )
-      const data: ItemData[] = await res.json()
-      const ids = data.map((item) => String(item.item_id))
-      setItemIds(ids)
-      const index = ids.indexOf(id)
-      setCurrentIndex(index >= 0 ? index : 0)
-    }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/group/${groupId}`);
+      const data: ItemData[] = await res.json();
+      const ids = data.map(item => String(item.item_id));
+      setItemIds(ids);
+      const index = ids.indexOf(id);
+      setCurrentIndex(index >= 0 ? index : 0);
+    };
 
-    fetchItemIdsByGroup()
-  }, [groupId, id])
+    fetchItemIdsByGroup();
+  }, [groupId, id]);
 
-  // 画像取得（URL の item_id を使用）
+  // 画像取得（URLのitem_idを使用）
   useEffect(() => {
-    if (!id) return
+    if (!id) return;
 
     const fetchImages = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/item-images/${id}`
-        )
-        if (!res.ok) throw new Error('画像の取得に失敗しました')
-        const data = await res.json()
-        setImages(data)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/item-images/${id}`);
+        if (!res.ok) throw new Error("画像の取得に失敗しました");
+        const data = await res.json();
+        setImages(data);
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
-    }
+    };
 
-    fetchImages()
-  }, [id])
+    fetchImages();
+  }, [id]);
 
   // チャットスレッドの有無確認
   useEffect(() => {
-    if (!id) return
+    if (!id) return;
 
     const checkThread = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${id}`
-        )
-        const data = await res.json()
-        setThreadExists(!!data?.thread_id)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${id}`);
+        const data = await res.json();
+        setThreadExists(!!data?.thread_id);
       } catch (error) {
-        console.log('スレッド未作成またはエラー', error)
-        setThreadExists(false)
+        console.log("スレッド未作成またはエラー", error);
+        setThreadExists(false);
       }
-    }
+    };
 
-    checkThread()
-  }, [id])
+    checkThread();
+  }, [id]);
 
   const handleCreateThread = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item_id: Number(id) }),
-      })
+      });
 
-      if (!res.ok) throw new Error('Thread作成失敗')
+      if (!res.ok) throw new Error("Thread作成失敗");
 
-      const data = await res.json()
-      if (data?.thread_id) setThreadExists(true)
+      const data = await res.json();
+      if (data?.thread_id) setThreadExists(true);
     } catch (err) {
-      console.error('Thread作成エラー', err)
+      console.error("Thread作成エラー", err);
     }
-  }
+  };
 
   // スワイプ処理
-  let touchStartX = 0
+  let touchStartX = 0;
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX = e.touches[0].clientX
-  }
+    touchStartX = e.touches[0].clientX;
+  };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEndX = e.changedTouches[0].clientX
-    const diff = touchEndX - touchStartX
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchEndX - touchStartX;
 
     if (diff > 50 && currentIndex > 0) {
-      const newIndex = currentIndex - 1
-      setCurrentIndex(newIndex)
-      router.replace(
-        `/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`
-      )
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
     } else if (diff < -50 && currentIndex < itemIds.length - 1) {
-      const newIndex = currentIndex + 1
-      setCurrentIndex(newIndex)
-      router.replace(
-        `/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`
-      )
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
     }
-  }
-
-  const formatElapsedTime = (iso: string) => {
-    const now = new Date()
-    const updated = new Date(iso)
-    const diff = now.getTime() - updated.getTime()
-    const mins = Math.floor(diff / (1000 * 60))
-    const hours = Math.floor(mins / 60)
-    const days = Math.floor(hours / 24)
-    const months = Math.floor(days / 30)
-    const years = Math.floor(months / 12)
-    if (years > 0) return `${years}年前`
-    if (months > 0) return `${months}ヶ月前`
-    if (days > 0) return `${days}日前`
-    if (hours > 0) return `${hours}時間前`
-    if (mins > 0) return `${mins}分前`
-    return 'たった今'
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white px-6">
@@ -171,11 +142,9 @@ export default function ItemPage({ params }: PageProps) {
           <button
             className="absolute left-0 top-1/2 transform -translate-y-1/2 text-3xl font-bold px-2 z-10 bg-white/70 rounded-full"
             onClick={() => {
-              const newIndex = currentIndex - 1
-              setCurrentIndex(newIndex)
-              router.replace(
-                `/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`
-              )
+              const newIndex = currentIndex - 1;
+              setCurrentIndex(newIndex);
+              router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
             }}
           >
             ⟨
@@ -191,7 +160,7 @@ export default function ItemPage({ params }: PageProps) {
           {images.map((img) => (
             <img
               key={img.image_id}
-              src={img.image_url || '/no-image.svg'}
+              src={img.image_url || "/no-image.svg"}
               alt={`Item Image ${img.image_id}`}
               className="h-48 rounded shadow"
             />
@@ -203,11 +172,9 @@ export default function ItemPage({ params }: PageProps) {
           <button
             className="absolute right-0 top-1/2 transform -translate-y-1/2 text-3xl font-bold px-2 z-10 bg-white/70 rounded-full"
             onClick={() => {
-              const newIndex = currentIndex + 1
-              setCurrentIndex(newIndex)
-              router.replace(
-                `/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`
-              )
+              const newIndex = currentIndex + 1;
+              setCurrentIndex(newIndex);
+              router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
             }}
           >
             ⟩
@@ -218,24 +185,24 @@ export default function ItemPage({ params }: PageProps) {
       {/* タブ切り替え */}
       <div className="flex justify-around border-b">
         <button
-          onClick={() => setTab('detail')}
-          className={tab === 'detail' ? 'border-b-2 font-bold' : ''}
+          onClick={() => setTab("detail")}
+          className={tab === "detail" ? "border-b-2 font-bold" : ""}
         >
           詳細
         </button>
         <button
-          onClick={() => setTab('chat')}
-          className={tab === 'chat' ? 'border-b-2 font-bold' : ''}
+          onClick={() => setTab("chat")}
+          className={tab === "chat" ? "border-b-2 font-bold" : ""}
         >
           メッセージ
         </button>
       </div>
 
       {/* コンテンツ表示 */}
-      {tab === 'detail' && id && <ItemDetail itemId={id} />}
+      {tab === "detail" && id && <ItemDetail itemId={id} />}
 
-      {tab === 'chat' &&
-        (threadExists === null ? (
+      {tab === "chat" && (
+        threadExists === null ? (
           <p className="p-4">読み込み中...</p>
         ) : threadExists === false ? (
           <div className="min-h-screen flex items-center justify-center">
@@ -250,11 +217,11 @@ export default function ItemPage({ params }: PageProps) {
             </div>
           </div>
         ) : (
-          id &&
-          userId !== undefined && (
+          id && userId !== undefined && (
             <ItemChat itemId={id} userId={userId} />
           )
-        ))}
+        )
+      )}
     </div>
-  )
+  );
 }
