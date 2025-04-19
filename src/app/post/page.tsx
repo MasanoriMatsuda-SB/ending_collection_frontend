@@ -61,6 +61,7 @@ function PostPageContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
   const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
+  const [groupId, setGroupId] = useState<number>(1);
 
   // JWTからユーザーID取得
   useEffect(() => {
@@ -72,6 +73,11 @@ function PostPageContent() {
       } catch {
         // ignore
       }
+    }
+    // ローカルストレージから現在の group_id を取得
+    const stored = localStorage.getItem('selectedGroupId');
+    if (stored && !isNaN(Number(stored))) {
+      setGroupId(Number(stored));
     }
   }, []);
 
@@ -154,7 +160,7 @@ function PostPageContent() {
       fm.append('category_id', category);
       fm.append('condition_rank', condition);
       fm.append('description', memo);
-      fm.append('group_id', '1');
+      fm.append('group_id', String(groupId));
       fm.append('user_id', String(userId));
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items`, { method: 'POST', body: fm });
       if (!res.ok) throw new Error();
@@ -257,7 +263,7 @@ function PostPageContent() {
         fm.append('category_id', b.category);
         fm.append('condition_rank', b.condition);
         fm.append('description', b.memo);
-        fm.append('group_id', '1');
+        fm.append('group_id', String(groupId));
         fm.append('user_id', String(userId));
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items`, {
           method: 'POST',
