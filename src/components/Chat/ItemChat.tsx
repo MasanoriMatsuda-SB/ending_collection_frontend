@@ -38,7 +38,8 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
 
   // const currentUserId = 14;    //暫定対応
   // const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
-  const [currentUserId, setCurrentUserId] = useState(userId); 
+  // const [currentUserId, setCurrentUserId] = useState(userId); 
+  const currentUserId = userId
 
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
