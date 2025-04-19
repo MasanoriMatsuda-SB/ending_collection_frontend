@@ -48,7 +48,7 @@ export default function MessageInputArea({
         </div>
       )}
 
-      <div className="mt-4 flex items-center border-t pt-2 space-x-2">
+      {/* <div className="mt-4 flex items-center border-t pt-2 space-x-2">
         <label htmlFor="fileInput" className="cursor-pointer">
           <img src="/icon-attachment.png" alt="添付アイコン" className="w-6 h-6" />
         </label>
@@ -61,16 +61,47 @@ export default function MessageInputArea({
               setFile(e.target.files[0]);
             }
           }}
+        /> */}
+
+      {/* flex-wrap と gap でアイコンの崩れを防止 */}
+      <div className="mt-4 flex flex-wrap items-center border-t pt-2 gap-2 sm:gap-2">
+        {/* 添付アイコン：サイズ調整 */}
+        <label htmlFor="fileInput" className="cursor-pointer">
+          <img
+            src="/icon-attachment.png"
+            alt="添付アイコン"
+            className="mt-1 w-5 h-5 sm:mt-1 sm:w-6 sm:h-6" // スマホでは少し小さく
+          />
+        </label>
+        <input
+          id="fileInput"
+          type="file"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              setFile(e.target.files[0]);
+            }
+          }}
         />
 
-        <VoiceRecorder
+        {/* <VoiceRecorder
           itemId={itemId}
           currentUserId={currentUserId}
           socket={socket}
           fetchMessages={fetchMessages}
-        />
+        /> */}
 
-        <input
+        {/* 録音アイコン：同様にサイズ指定で揃える */}
+        <div className="w-5 h-5 sm:w-6 sm:h-6">
+          <VoiceRecorder
+            itemId={itemId}
+            currentUserId={currentUserId}
+            socket={socket}
+            fetchMessages={fetchMessages}
+          />
+        </div>
+
+        {/* <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -85,10 +116,44 @@ export default function MessageInputArea({
         >
           送信
         </button>
+      </div> */}
+
+        {/* 入力欄：min-w-0 で横幅制限に対応 */}
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="メッセージを入力..."
+          className="flex-1 min-w-0 border rounded-xl px-3 py-2 text-sm sm:text-xs" // スマホで文字・余白を縮小
+        />
+
+        {/* 送信ボタン：スマホではコンパクトに */}
+        <button
+          onClick={sendMessage}
+          // className="bg-[#7B6224] text-white px-4 py-2 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1" // スマホで小型化
+          className="bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1"
+          disabled={!input && !file}
+        >
+          送信
+        </button>
       </div>
 
-      {file && (
+
+      {/* {file && (
         <div className="mt-2 text-sm text-gray-600">
+          添付ファイル: {file.name}
+          <button onClick={() => setFile(null)} className="ml-2 text-red-500 text-xs">
+            取消
+          </button>
+        </div>
+      )}
+    </>
+  );
+} */}
+
+      {/* 添付ファイル名：折返し＆スマホ対応 */}
+      {file && (
+        <div className="mt-2 text-sm text-gray-600 break-all sm:text-xs"> {/* ✅ break-all */}
           添付ファイル: {file.name}
           <button onClick={() => setFile(null)} className="ml-2 text-red-500 text-xs">
             取消
