@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Props {
   onClose: () => void;
@@ -9,8 +9,12 @@ interface Props {
 
 export default function SummaryPopup({ onClose, itemId }: Props) {
     const [summary, setSummary] = useState("要約を取得中...");
+    const didFetchRef = useRef(false); // ← fetch済みかどうかのフラグ
   
     useEffect(() => {
+      if (didFetchRef.current) return; // 2回目以降はスキップ
+      didFetchRef.current = true;
+      
       const fetchSummary = async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rag/summary/${itemId}`);

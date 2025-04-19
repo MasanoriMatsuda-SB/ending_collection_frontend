@@ -32,6 +32,7 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
 
   // const currentUserId = 14;    //暫定対応
   // const [currentUserId, setCurrentUserId] = useState(14);   //開発テスト用の暫定対応。最後に削除
@@ -78,19 +79,36 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
     }
   };
 
-  const fetchReactions = async (msgs: Message[] = messages) => {
-    const all: Record<number, MessageReaction[]> = {};
-      // 並列化する
-    await Promise.all(
-      msgs.map(async (msg) => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
-        const data = await res.json();
-        all[msg.message_id] = data;
-      })
-    );
-    setReactionsMap(all);
-  };
+  //個別取得のためコメントアウト（一括取得がうまくいったら削除）
+  // const fetchReactions = async (msgs: Message[] = messages) => {
+  //   const all: Record<number, MessageReaction[]> = {};
+  //     // 並列化する
+  //   await Promise.all(
+  //     msgs.map(async (msg) => {
+  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
+  //       const data = await res.json();
+  //       all[msg.message_id] = data;
+  //     })
+  //   );
+  //   setReactionsMap(all);
+  // };
   
+  //一括取得に修正
+  const fetchReactions = async (msgs: Message[] = messages) => {
+    if (!msgs.length) return;
+  
+    const ids = msgs.map((m) => m.message_id).join(",");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/by-message-ids?ids=${ids}`);
+      const data = await res.json(); // data は { 1: [...], 2: [...], ... } 形式
+      setReactionsMap(data);
+    } catch (err) {
+      console.error("リアクション取得失敗", err);
+    }
+  };
+
+
+
   // 以下RAG用
   const [showSummary, setShowSummary] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -265,7 +283,7 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
                 formatTime={formatTime}
               />
               
-              {(reactionsMap[msg.message_id]?.length ?? 0) > 0 && (
+              {/* {(reactionsMap[msg.message_id]?.length ?? 0) > 0 && (
                 <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
                   <MessageReactionButton
                     messageId={msg.message_id}
@@ -276,10 +294,10 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
                     showAll={false}
                   />
                 </div>
-              )}
+              )} */}
 
               {/* 右クリック時のみ全リアクション選択表示 */}
-              {selectedMessage?.message_id === msg.message_id && (
+              {/* {selectedMessage?.message_id === msg.message_id && (
                 <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
                   <MessageReactionButton
                     messageId={msg.message_id}
@@ -290,7 +308,26 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
                     showAll={true} // ← すべてのリアクション表示
                   />
                 </div>
-              )}
+              )} */}
+
+              <div
+                className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}
+                onMouseEnter={() => setHoveredMessageId(msg.message_id)}
+                onMouseLeave={() => setHoveredMessageId(null)}
+              >
+                <MessageReactionButton
+                  messageId={msg.message_id}
+                  userId={currentUserId}
+                  initialReactions={reactionsMap[msg.message_id] || []}
+                  onReact={(type) => handleReact(msg.message_id, type)}
+                  onRemove={() => handleRemove(msg.message_id)}
+                  showAll={hoveredMessageId === msg.message_id}
+                />
+              </div>
+
+
+
+
             </div>
           );
         })}
