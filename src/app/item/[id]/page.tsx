@@ -1,6 +1,7 @@
 "use client";
 import { use } from "react";
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import ItemDetail from "@/components/ItemDetail";
 import ItemChat from "@/components/Chat/ItemChat";
@@ -19,43 +20,51 @@ type JwtPayload = {
   user_id: number;
 };
 
+type ItemData = {
+  item_id: number;
+};
+
 export default function ItemPage({ params }: PageProps) {
-  const { id } = use(params);
+  const { id } = use(params); // URLのitem_id
+  const router = useRouter();
+
   const [tab, setTab] = useState<"detail" | "chat">("detail");
   const [itemIds, setItemIds] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [images, setImages] = useState<ItemImage[]>([]);
+  const [threadExists, setThreadExists] = useState<boolean | null>(null);
 
-  // JWTからuser_id取得
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
   const userId = decoded?.user_id;
 
-  // item_id一覧取得
-  useEffect(() => {
-    if (!userId) return;
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get("group_id");
+  const passedUserId = searchParams.get("user_id");
 
-    const fetchItemIds = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/item-ids`);
-      const data = await res.json();
-      const stringIds = data.map(String);
-      setItemIds(stringIds);
-      const initialIndex = stringIds.indexOf(id);
-      setCurrentIndex(initialIndex >= 0 ? initialIndex : 0);
+  // group_idに該当するitem_id一覧取得
+  useEffect(() => {
+    if (!groupId) return;
+
+    const fetchItemIdsByGroup = async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/items/group/${groupId}`);
+      const data: ItemData[] = await res.json();
+      const ids = data.map(item => String(item.item_id));
+      setItemIds(ids);
+      const index = ids.indexOf(id);
+      setCurrentIndex(index >= 0 ? index : 0);
     };
 
-    fetchItemIds();
-  }, [userId, id]);
+    fetchItemIdsByGroup();
+  }, [groupId, id]);
 
-  const currentItemId = itemIds[currentIndex];
-
-  // 画像取得
+  // 画像取得（URLのitem_idを使用）
   useEffect(() => {
-    if (!currentItemId) return;
+    if (!id) return;
 
     const fetchImages = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/item-images/${currentItemId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/item-images/${id}`);
         if (!res.ok) throw new Error("画像の取得に失敗しました");
         const data = await res.json();
         setImages(data);
@@ -65,18 +74,42 @@ export default function ItemPage({ params }: PageProps) {
     };
 
     fetchImages();
-  }, [currentItemId]);
+  }, [id]);
 
+  // チャットスレッドの有無確認
   useEffect(() => {
-    console.log("userId", userId);
-  }, [userId]);
+    if (!id) return;
 
-  useEffect(() => {
-    console.log("itemIds", itemIds);
-    console.log("currentIndex", currentIndex);
-    console.log("currentItemId", currentItemId);
-  }, [itemIds, currentIndex]);
+    const checkThread = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${id}`);
+        const data = await res.json();
+        setThreadExists(!!data?.thread_id);
+      } catch (error) {
+        console.log("スレッド未作成またはエラー", error);
+        setThreadExists(false);
+      }
+    };
 
+    checkThread();
+  }, [id]);
+
+  const handleCreateThread = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: Number(id) }),
+      });
+
+      if (!res.ok) throw new Error("Thread作成失敗");
+
+      const data = await res.json();
+      if (data?.thread_id) setThreadExists(true);
+    } catch (err) {
+      console.error("Thread作成エラー", err);
+    }
+  };
 
   // スワイプ処理
   let touchStartX = 0;
@@ -90,75 +123,63 @@ export default function ItemPage({ params }: PageProps) {
     const diff = touchEndX - touchStartX;
 
     if (diff > 50 && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
     } else if (diff < -50 && currentIndex < itemIds.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
     }
   };
-
-  // ＝＝＝
-    const [threadExists, setThreadExists] = useState<boolean | null>(null);
-
-    useEffect(() => {
-      if (!id) return;
-      const checkThread = async () => {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads/by-item/${id}`);
-          const data = await res.json();
-          if (data?.thread_id) {
-            setThreadExists(true);
-          } else {
-            setThreadExists(false);
-          }
-        } catch (error) {
-          console.log("スレッド未作成またはエラー", error);
-          setThreadExists(false);
-        }
-      };
-      checkThread();
-    }, [currentItemId]);            // （備忘！！デプロイうまくいったら次回で削除）id⇒currentItemIdに変更
-  
-    const handleCreateThread = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/threads`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ item_id: Number(currentItemId) }),   // （備忘！！デプロイうまくいったら次回で削除）id⇒currentItemIdに変更
-        });
-  
-        if (!res.ok) throw new Error("Thread作成失敗");
-  
-        const data = await res.json();
-        if (data?.thread_id) {
-          setThreadExists(true);
-        }
-      } catch (err) {
-        console.error("Thread作成エラー", err);
-      }
-    };
-
-
 
   return (
     <div className="min-h-screen flex flex-col bg-white px-6">
       {/* スワイプ画像エリア */}
-      <div
-        className="flex overflow-x-auto space-x-4 p-4"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {images.map((img) => {
-          return (
+      <div className="relative p-4">
+        {/* 左ボタン */}
+        {images.length > 0 && currentIndex > 0 && (
+          <button
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 text-3xl font-bold px-2 z-10 bg-white/70 rounded-full"
+            onClick={() => {
+              const newIndex = currentIndex - 1;
+              setCurrentIndex(newIndex);
+              router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
+            }}
+          >
+            ⟨
+          </button>
+        )}
+
+        {/* 画像エリア */}
+        <div
+          className="flex justify-center overflow-x-auto space-x-4"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {images.map((img) => (
             <img
               key={img.image_id}
               src={img.image_url || "/no-image.svg"}
               alt={`Item Image ${img.image_id}`}
               className="h-48 rounded shadow"
             />
-          );
-        })}
+          ))}
+        </div>
+
+        {/* 右ボタン */}
+        {images.length > 0 && currentIndex < itemIds.length - 1 && (
+          <button
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 text-3xl font-bold px-2 z-10 bg-white/70 rounded-full"
+            onClick={() => {
+              const newIndex = currentIndex + 1;
+              setCurrentIndex(newIndex);
+              router.replace(`/item/${itemIds[newIndex]}?user_id=${passedUserId}&group_id=${groupId}`);
+            }}
+          >
+            ⟩
+          </button>
+        )}
       </div>
 
       {/* タブ切り替え */}
@@ -178,9 +199,7 @@ export default function ItemPage({ params }: PageProps) {
       </div>
 
       {/* コンテンツ表示 */}
-      {tab === "detail" && currentItemId && (
-        <ItemDetail itemId={currentItemId} />
-      )}
+      {tab === "detail" && id && <ItemDetail itemId={id} />}
 
       {tab === "chat" && (
         threadExists === null ? (
@@ -198,14 +217,11 @@ export default function ItemPage({ params }: PageProps) {
             </div>
           </div>
         ) : (
-          currentItemId && userId !== undefined && (
-          <ItemChat itemId={currentItemId} userId={userId}/>
+          id && userId !== undefined && (
+            <ItemChat itemId={id} userId={userId} />
           )
         )
       )}
-
-
-
     </div>
   );
 }

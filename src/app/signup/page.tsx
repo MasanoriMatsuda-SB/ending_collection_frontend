@@ -84,7 +84,7 @@ export default function SignupPage() {
       const loginData = await loginRes.json();
       localStorage.setItem('token', loginData.access_token);
       refreshUser();
-      router.push('/');
+      router.push('/signup/finish');
     } catch (err: unknown) {
       console.error('Registration/Login error:', err);
       setError('エラーが発生しました');
