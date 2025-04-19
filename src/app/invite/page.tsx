@@ -1,19 +1,23 @@
 // src/app/invite/page.tsx
 'use client'
-export const dynamic = 'force-dynamic'
 
 import { useAuth } from '@/lib/AuthContext'
 import Button from '@/components/Button'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState, FormEvent } from 'react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export default function InvitePage() {
   const { user, refreshUser, loading } = useAuth()
-  const searchParams = useSearchParams()
-  const token = searchParams.get('token')
   const router = useRouter()
+
+  // ── トークン取得 ──
+  const [token, setToken] = useState<string | null>(null)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setToken(params.get('token'))
+  }, [])
 
   // ── フォーム・状態管理フック ──
   const [email, setEmail] = useState('')
