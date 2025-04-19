@@ -35,7 +35,8 @@ export default function MessageInputArea({
   return (
     <>
       {replyToMessage && (
-        <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-blue-400 rounded relative text-sm text-gray-700">
+        // <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-blue-400 rounded relative text-sm text-gray-700">
+        <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-stone-600 rounded relative text-sm text-gray-700">
           <p className="font-semibold">{replyToMessage.username} への返信</p>
           <p className="truncate">{replyToMessage.content}</p>
           <button
@@ -78,7 +79,8 @@ export default function MessageInputArea({
         />
         <button
           onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+          // className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
+          className="bg-[#7B6224] text-white px-4 py-2 rounded-xl disabled:opacity-50"
           disabled={!input && !file}
         >
           送信

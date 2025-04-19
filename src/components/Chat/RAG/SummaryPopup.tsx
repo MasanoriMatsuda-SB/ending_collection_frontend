@@ -36,7 +36,8 @@ export default function SummaryPopup({ onClose, itemId }: Props) {
           <p className="mb-4">{summary}</p>
           <button
             onClick={onClose}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            // className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-stone-500 text-white px-4 py-2 rounded hover:bg-stone-600"
           >
             閉じる
           </button>
