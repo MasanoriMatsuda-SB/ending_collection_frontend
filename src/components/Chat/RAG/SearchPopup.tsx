@@ -57,7 +57,8 @@ export default function SearchPopup({ onClose, itemId }: Props) {
           />
           <button
             onClick={handleSearch}
-            className="px-4 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600"
+            // className="px-4 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600"
+            className="px-4 py-1 bg-stone-500 text-white rounded-r hover:bg-stone-600"
           >
             検索
           </button>

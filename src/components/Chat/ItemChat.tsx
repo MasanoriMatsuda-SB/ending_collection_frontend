@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import socket from "@/lib/socket";
 import { formatTime, isSameDay } from "@/lib/utils";
 
-import DevUserSwitcher from "../DevUserSwitcher"; // テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
+// テスト用の暫定機能（最後に削除。(1)末尾の<DevUserSwitcher ... /、(2)component/DevUserSwitcheの削除も忘れずに！）
+// import DevUserSwitcher from "../DevUserSwitcher"; 
+
 
 import MessageBubble from "./MessageBubble";
 import ContextMenu from "./ContextMenu"
@@ -79,20 +81,6 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
     }
   };
 
-  //個別取得のためコメントアウト（一括取得がうまくいったら削除）
-  // const fetchReactions = async (msgs: Message[] = messages) => {
-  //   const all: Record<number, MessageReaction[]> = {};
-  //     // 並列化する
-  //   await Promise.all(
-  //     msgs.map(async (msg) => {
-  //       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/${msg.message_id}`);
-  //       const data = await res.json();
-  //       all[msg.message_id] = data;
-  //     })
-  //   );
-  //   setReactionsMap(all);
-  // };
-  
   //一括取得に修正
   const fetchReactions = async (msgs: Message[] = messages) => {
     if (!msgs.length) return;
@@ -283,33 +271,6 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
                 formatTime={formatTime}
               />
               
-              {/* {(reactionsMap[msg.message_id]?.length ?? 0) > 0 && (
-                <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
-                  <MessageReactionButton
-                    messageId={msg.message_id}
-                    userId={currentUserId}
-                    initialReactions={reactionsMap[msg.message_id] || []}
-                    onReact={(type) => handleReact(msg.message_id, type)}
-                    onRemove={() => handleRemove(msg.message_id)}
-                    showAll={false}
-                  />
-                </div>
-              )} */}
-
-              {/* 右クリック時のみ全リアクション選択表示 */}
-              {/* {selectedMessage?.message_id === msg.message_id && (
-                <div className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}>
-                  <MessageReactionButton
-                    messageId={msg.message_id}
-                    userId={currentUserId}
-                    initialReactions={reactionsMap[msg.message_id] || []}
-                    onReact={(type) => handleReact(msg.message_id, type)}
-                    onRemove={() => handleRemove(msg.message_id)}
-                    showAll={true} // ← すべてのリアクション表示
-                  />
-                </div>
-              )} */}
-
               <div
                 className={`flex mt-1 ${msg.user_id === currentUserId ? "justify-end" : "justify-start"}`}
                 onMouseEnter={() => setHoveredMessageId(msg.message_id)}
@@ -324,9 +285,6 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
                   showAll={hoveredMessageId === msg.message_id}
                 />
               </div>
-
-
-
 
             </div>
           );
@@ -372,23 +330,25 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
       <div className="flex gap-2 mt-5 ml-1">
         <button
           onClick={() => setShowSummary(true)}
-          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          // className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-3 py-1 text-sm bg-stone-400 text-white rounded hover:bg-stone-500"
         >
           要約
         </button>
         <button
           onClick={() => setShowSearch(true)}
-          className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+          // className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-3 py-1 text-sm bg-neutral-500 text-white rounded hover:bg-neutral-600"
         >
           検索
         </button>
       </div>
       
       {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
-      <DevUserSwitcher
+      {/* <DevUserSwitcher
         currentUserId={currentUserId}
         setCurrentUserId={setCurrentUserId}
-      />
+      /> */}
 
       {/* 要約・検索ポップアップ */}
       {showSummary && <SummaryPopup onClose={() => setShowSummary(false)} itemId={itemId} />}
