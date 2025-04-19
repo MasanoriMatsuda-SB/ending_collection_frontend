@@ -3,7 +3,6 @@
 
 import { useAuth } from '@/lib/AuthContext'
 import Button from '@/components/Button'
-import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, FormEvent } from 'react'
 
