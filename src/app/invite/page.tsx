@@ -67,7 +67,7 @@ export default function HomePage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.detail || '招待リンクの生成に失敗しました');
 
-      const url = `${window.location.origin}/invite/${result.token}`;
+      const url = `${window.location.origin}/invitation?token=${result.token}`;
       setInviteLink(url);
       navigator.clipboard.writeText(url);
       alert("招待リンクをコピーしました");

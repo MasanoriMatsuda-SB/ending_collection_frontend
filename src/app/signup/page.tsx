@@ -2,13 +2,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
+
+  // クエリから招待関連の情報を取得
+  const token = searchParams.get('token');
+  const fromInvitation = searchParams.get('fromInvitation') === '1';
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,7 +90,12 @@ export default function SignupPage() {
       const loginData = await loginRes.json();
       localStorage.setItem('token', loginData.access_token);
       refreshUser();
-      router.push('/signup/finish');
+      // 招待リンク経由ならinvitationへ遷移、通常はfinishへ（※URLパラメータ保持）
+      if (fromInvitation && token) {
+        router.push(`/signup/finish?fromInvitation=1&token=${token}`);
+      } else {
+        router.push(`/signup/finish`);
+      }
     } catch (err: unknown) {
       console.error('Registration/Login error:', err);
       setError('エラーが発生しました');

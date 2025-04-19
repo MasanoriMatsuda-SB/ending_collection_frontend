@@ -21,13 +21,15 @@ export default function InvitationPage() {
 
   const [inviteInfo, setInviteInfo] = useState<InviteResponse | null>(null);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loadingInvite, setLoadingInvite]  = useState(true);
 
   const token = searchParams.get('token');
 
   useEffect(() => {
     const fetchInvite = async () => {
       if (!user?.sub || !token) return;
+
+      console.log(" 招待トークン:", token);
 
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/group-invites/accept`, {
@@ -53,7 +55,7 @@ export default function InvitationPage() {
           setError('エラーが発生しました');
         }
       } finally {
-        setLoading(false);
+        setLoadingInvite(false);
       }
     };
 
@@ -64,6 +66,15 @@ export default function InvitationPage() {
     router.push('/');
   };
 
+  // AuthContext の読み込み中判定
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-white text-center px-6">
+  //       <p className="text-xl text-gray-900">読み込み中...</p>
+  //     </div>
+  //   );
+  // }
+
   if (!user?.sub) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white text-center px-6">
@@ -72,10 +83,10 @@ export default function InvitationPage() {
     );
   }
 
-  if (loading) {
+  if (loadingInvite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white text-center px-6">
-        <p className="text-xl text-gray-900">読み込み中...</p>
+        <p className="text-xl text-gray-900">招待リンクを処理中...</p>
       </div>
     );
   }

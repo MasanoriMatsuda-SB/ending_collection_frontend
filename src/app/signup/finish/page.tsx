@@ -4,17 +4,23 @@
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function HomePage() {
     const { user } = useAuth();
     const router = useRouter();
-    //const searchParams = useSearchParams();
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
+    const fromInvitation = searchParams.get('fromInvitation') === '1';
 
+    console.log("✅ signup/finish params:", { token, fromInvitation });
     
     const handleCreateGroup = () => {
-    // ここで招待URL経由であれば/invitationに遷移するように条件分岐追加してください
+      if (fromInvitation && token) {
+        router.push(`/invitation?token=${token}`);
+      } else {
         router.push('/grouping');
+      }
     };
   
     return (
@@ -36,7 +42,7 @@ export default function HomePage() {
               <p className="text-md font-semibold  mb-8">**********</p>
             </div>
             <Button
-              title="グループを作成する"
+              title={fromInvitation ? "招待されたグループに参加する" : "グループを作成する"}
               onClick={handleCreateGroup}
               variant="main"
               />
