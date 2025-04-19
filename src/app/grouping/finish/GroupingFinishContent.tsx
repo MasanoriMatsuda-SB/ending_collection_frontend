@@ -5,11 +5,20 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import Button from "@/components/Button";
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function GroupingFinishContent() {
   const params = useSearchParams();
   const { user } = useAuth();
   const groupName = params.get('groupName') || '未設定';
+  const groupId = params.get('groupId');
+
+  // グループ作成完了画面が表示されたタイミングで localStorage に selectedGroupId を保存
+  useEffect(() => {
+    if (user && groupId) {
+      localStorage.setItem('selectedGroupId', groupId);
+    }
+  }, [user, groupId]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
