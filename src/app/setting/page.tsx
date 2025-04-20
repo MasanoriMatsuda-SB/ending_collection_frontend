@@ -46,15 +46,16 @@ export default function SettingPage() {
       }
 
       // 成功したら新しいトークンを受け取り、localStorage に上書き
-      const data = await res.json() as { access_token: string }
+      const data = (await res.json()) as { access_token: string }
       localStorage.setItem('token', data.access_token)
       await refreshUser()
       setEditingField(null)
       setNewValue('')
       setUploadFile(null)
-    } catch (err: any) {
-      console.error(err)
-      setError(err.message || '更新に失敗しました')
+    } catch (error: unknown) {
+      console.error(error)
+      const message = error instanceof Error ? error.message : String(error)
+      setError(message || '更新に失敗しました')
     } finally {
       setIsUpdating(false)
     }
@@ -73,65 +74,64 @@ export default function SettingPage() {
       <h1 className="text-2xl font-bold mb-8">アカウント情報</h1>
 
       {/* アバター */}
-<div className="flex flex-col items-center mb-8">
-  {user.photoURL ? (
-    <img
-      src={user.photoURL}
-      alt="avatar"
-      className="w-24 h-24 rounded-full object-cover mb-2"
-    />
-  ) : (
-    <div className="w-24 h-24 bg-gray-200 rounded-full mb-2" />
-  )}
-  <button
-    onClick={() => {
-      setEditingField('photo')
-      setError('')
-    }}
-    className="text-sm text-[#17B5B5] hover:underline mb-2"
-  >
-    変更する
-  </button>
-
-  {editingField === 'photo' && (
-    <div className="flex flex-col items-center gap-2">
-      {/* ファイル選択ボタン＋ファイル名表示 */}
-      <div className="flex items-center gap-2">
-        <input
-          id="photo-input"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) =>
-            setUploadFile(e.target.files ? e.target.files[0] : null)
-          }
-        />
-        <label
-          htmlFor="photo-input"
-          className={`px-4 py-2 border border-[#7B6224] text-[#7B6224] bg-white rounded-full transition cursor-pointer
-            ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#7B6224] hover:text-white'}`}
+      <div className="flex flex-col items-center mb-8">
+        {user.photoURL ? (
+          <img
+            src={user.photoURL}
+            alt="avatar"
+            className="w-24 h-24 rounded-full object-cover mb-2"
+          />
+        ) : (
+          <div className="w-24 h-24 bg-gray-200 rounded-full mb-2" />
+        )}
+        <button
+          onClick={() => {
+            setEditingField('photo')
+            setError('')
+          }}
+          className="text-sm text-[#17B5B5] hover:underline mb-2"
         >
-          ファイルを選択する
-        </label>
-        {/* ここで選択されたファイル名を表示 */}
-        {uploadFile && (
-          <span className="text-sm text-gray-700 truncate max-w-xs">
-            {uploadFile.name}
-          </span>
+          変更する
+        </button>
+
+        {editingField === 'photo' && (
+          <div className="flex flex-col items-center gap-2">
+            {/* ファイル選択ボタン＋ファイル名表示 */}
+            <div className="flex items-center gap-2">
+              <input
+                id="photo-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) =>
+                  setUploadFile(e.target.files ? e.target.files[0] : null)
+                }
+              />
+              <label
+                htmlFor="photo-input"
+                className={`px-4 py-2 border border-[#7B6224] text-[#7B6224] bg-white rounded-full transition cursor-pointer
+                  ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#7B6224] hover:text-white'}`}
+              >
+                ファイルを選択する
+              </label>
+              {uploadFile && (
+                <span className="text-sm text-gray-700 truncate max-w-xs">
+                  {uploadFile.name}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleUpdate}
+              disabled={isUpdating}
+              className={`px-4 py-2 border border-[#7B6224] text-[#7B6224] bg-white rounded-full transition
+                ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#7B6224] hover:text-white'}`}
+            >
+              {isUpdating ? '保存中…' : '保存'}
+            </button>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
         )}
       </div>
-      <button
-        onClick={handleUpdate}
-        disabled={isUpdating}
-        className={`px-4 py-2 border border-[#7B6224] text-[#7B6224] bg-white rounded-full transition
-          ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#7B6224] hover:text-white'}`}
-      >
-        {isUpdating ? '保存中…' : '保存'}
-      </button>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-    </div>
-  )}
-</div>
 
       {/* お名前 */}
       <div className="mb-6">
@@ -219,7 +219,7 @@ export default function SettingPage() {
           <button
             onClick={() => {
               setEditingField('password')
-              setNewValue('')
+              setNewValue('')  
               setError('')
             }}
             className="text-sm text-[#17B5B5] hover:underline"
