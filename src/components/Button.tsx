@@ -10,6 +10,7 @@ type ButtonProps = {
   activeScale?: number;
   onClick?: () => void;
   type?: "button" | "submit";
+  disabled?: boolean;
 };
 
 const Button = ({
