@@ -88,15 +88,19 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
   
     const ids = msgs.map((m) => m.message_id).join(",");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/by-message-ids?ids=${ids}`);
-      const data = await res.json(); // data は { 1: [...], 2: [...], ... } 形式
-      setReactionsMap(data);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reactions/batch/by-message-ids?ids=${ids}`);
+      const data = await res.json(); // data は { "1": [...], "2": [...] }
+  
+      const parsedData: Record<number, MessageReaction[]> = {};
+      for (const key in data) {
+        parsedData[parseInt(key)] = data[key];
+      }
+  
+      setReactionsMap(parsedData);
     } catch (err) {
       console.error("リアクション取得失敗", err);
     }
   };
-
-
 
   // 以下RAG用
   const [showSummary, setShowSummary] = useState(false);
@@ -118,9 +122,17 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
       setMessages((prev) => prev.filter((msg) => msg.message_id !== message_id));
     });
 
+    socket.on("new_attachment", ({ message_id, attachments }: { message_id: number; attachments: Attachment[] }) => {
+      setAttachmentsMap((prev) => ({
+        ...prev,
+        [message_id]: attachments,
+      }));
+    });
+
     return () => {
       socket.off("receive_message");
       socket.off("delete_message");
+      socket.off("new_attachment");
     };
   }, []);
 
@@ -173,21 +185,43 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
 
       const newMessage = await res.json();
 
+      // if (file) {
+      //   const formData = new FormData();
+      //   formData.append("message_id", String(newMessage.message_id));
+      //   formData.append("file", file);
+
+      //   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message_attachments`, {
+      //     method: "POST",
+      //     body: formData,
+      //   });
+      //   setFile(null);
+      // }
+
       if (file) {
         const formData = new FormData();
         formData.append("message_id", String(newMessage.message_id));
         formData.append("file", file);
-
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message_attachments`, {
+      
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message_attachments`, {
           method: "POST",
           body: formData,
         });
+      
+        const uploadedAttachment = await uploadRes.json();
+      
+        // Socket通知でリアルタイム反映
+        socket.emit("new_attachment", {
+          message_id: newMessage.message_id,
+          attachments: [uploadedAttachment],
+        });
+      
         setFile(null);
       }
 
       socket.emit("send_message", newMessage);
       setInput("");
       setReplyToMessage(null);
+      setIsSending(false);
       await fetchMessages();
     } catch (err) {
       console.error("メッセージ送信エラー", err);
@@ -324,6 +358,7 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
         itemId={itemId}
         socket={socket}
         fetchMessages={fetchMessages}
+        isSending={isSending}
       />
       
 
@@ -331,14 +366,12 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
       <div className="flex gap-2 mt-5 ml-1">
         <button
           onClick={() => setShowSummary(true)}
-          // className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
           className="px-3 py-1 text-sm bg-stone-400 text-white rounded hover:bg-stone-500"
         >
           要約
         </button>
         <button
           onClick={() => setShowSearch(true)}
-          // className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
           className="px-3 py-1 text-sm bg-neutral-500 text-white rounded hover:bg-neutral-600"
         >
           検索

@@ -17,6 +17,7 @@ interface Props {
   itemId: string;
   socket: Socket;
   fetchMessages: () => void;
+  isSending: boolean;
 }
 
 export default function MessageInputArea({
@@ -31,11 +32,11 @@ export default function MessageInputArea({
   itemId,
   socket,
   fetchMessages,
+  isSending
 }: Props) {
   return (
     <>
       {replyToMessage && (
-        // <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-blue-400 rounded relative text-sm text-gray-700">
         <div className="mb-2 px-3 py-2 bg-gray-100 border-l-4 border-stone-600 rounded relative text-sm text-gray-700">
           <p className="font-semibold">{replyToMessage.username} への返信</p>
           <p className="truncate">{replyToMessage.content}</p>
@@ -47,21 +48,6 @@ export default function MessageInputArea({
           </button>
         </div>
       )}
-
-      {/* <div className="mt-4 flex items-center border-t pt-2 space-x-2">
-        <label htmlFor="fileInput" className="cursor-pointer">
-          <img src="/icon-attachment.png" alt="添付アイコン" className="w-6 h-6" />
-        </label>
-        <input
-          id="fileInput"
-          type="file"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.[0]) {
-              setFile(e.target.files[0]);
-            }
-          }}
-        /> */}
 
       {/* flex-wrap と gap でアイコンの崩れを防止 */}
       <div className="mt-4 flex flex-wrap items-center border-t pt-2 gap-2 sm:gap-2">
@@ -84,13 +70,6 @@ export default function MessageInputArea({
           }}
         />
 
-        {/* <VoiceRecorder
-          itemId={itemId}
-          currentUserId={currentUserId}
-          socket={socket}
-          fetchMessages={fetchMessages}
-        /> */}
-
         {/* 録音アイコン：同様にサイズ指定で揃える */}
         <div className="w-5 h-5 sm:w-6 sm:h-6">
           <VoiceRecorder
@@ -100,23 +79,6 @@ export default function MessageInputArea({
             fetchMessages={fetchMessages}
           />
         </div>
-
-        {/* <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="メッセージを入力..."
-          className="flex-1 border rounded-xl p-2"
-        />
-        <button
-          onClick={sendMessage}
-          // className="bg-blue-500 text-white px-4 py-2 rounded-xl disabled:opacity-50"
-          className="bg-[#7B6224] text-white px-4 py-2 rounded-xl disabled:opacity-50"
-          disabled={!input && !file}
-        >
-          送信
-        </button>
-      </div> */}
 
         {/* 入力欄：min-w-0 で横幅制限に対応 */}
         <input
@@ -130,30 +92,20 @@ export default function MessageInputArea({
         {/* 送信ボタン：スマホではコンパクトに */}
         <button
           onClick={sendMessage}
-          // className="bg-[#7B6224] text-white px-4 py-2 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1" // スマホで小型化
-          className="bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1"
-          disabled={!input && !file}
+          // className="bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1"
+          className={`bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl 
+            sm:text-sm sm:px-3 sm:py-1
+            ${isSending ? 'opacity-50 cursor-wait' : ''}`}
+          // disabled={!input && !file}
+          disabled={isSending || (!input && !file)}
         >
-          送信
+          {isSending ? "送信中…" : "送信"}
         </button>
       </div>
 
-
-      {/* {file && (
-        <div className="mt-2 text-sm text-gray-600">
-          添付ファイル: {file.name}
-          <button onClick={() => setFile(null)} className="ml-2 text-red-500 text-xs">
-            取消
-          </button>
-        </div>
-      )}
-    </>
-  );
-} */}
-
-      {/* 添付ファイル名：折返し＆スマホ対応 */}
+      {/* 添付ファイル名：Me折返し＆スマホ対応 */}
       {file && (
-        <div className="mt-2 text-sm text-gray-600 break-all sm:text-xs"> {/* ✅ break-all */}
+        <div className="mt-2 text-sm text-gray-600 break-all sm:text-xs"> 
           添付ファイル: {file.name}
           <button onClick={() => setFile(null)} className="ml-2 text-red-500 text-xs">
             取消

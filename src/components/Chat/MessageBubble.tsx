@@ -40,14 +40,11 @@ export default function MessageBubble({
         <div
           onContextMenu={(e) => onRightClick(e, msg)}
           onTouchStart={(e) => onTouchHold(e, msg)}
-          // className={`max-w-xs px-4 py-2 rounded-xl text-sm shadow text-left ${
-          //   isCurrentUser ? "bg-blue-100" : "bg-gray-200"
           className={`max-w-xs px-4 py-2 rounded-xl text-sm shadow text-left ${
             isCurrentUser ? "bg-stone-300" : "bg-gray-200"
           }`}
         >
           {replyTo && (
-            // <div className="mb-2 p-2 bg-white/70 text-gray-700 text-xs border-l-4 border-blue-300 rounded">
             <div className="mb-2 p-2 bg-white/70 text-gray-700 text-xs border-l-4 border-stone-400 rounded">
               <p className="font-semibold">{replyTo.username}</p>
               <p className="truncate">{replyTo.content}</p>
@@ -91,7 +88,6 @@ export default function MessageBubble({
                       href={att.attachment_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      // className="text-blue-600 underline text-sm block"
                       className="text-stone-600 underline text-sm block"
                     >
                       添付ファイルを開く
