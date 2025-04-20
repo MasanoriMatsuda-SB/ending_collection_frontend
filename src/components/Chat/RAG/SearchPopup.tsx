@@ -11,8 +11,10 @@ export default function SearchPopup({ onClose, itemId }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async () => {
+    setIsLoading(true);
     try {
       //Index作成
       const indexRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rag/index/${itemId}`, {
@@ -36,6 +38,8 @@ export default function SearchPopup({ onClose, itemId }: Props) {
       console.error("検索失敗:", err);
       setError("検索中にエラーが発生しました");
       setResults([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,10 +61,10 @@ export default function SearchPopup({ onClose, itemId }: Props) {
           />
           <button
             onClick={handleSearch}
-            // className="px-4 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600"
+            disabled={isLoading || !query.trim()}
             className="px-4 py-1 bg-stone-500 text-white rounded-r hover:bg-stone-600"
           >
-            検索
+            {isLoading ? "検索中…" : "検索"}
           </button>
         </div>
 
