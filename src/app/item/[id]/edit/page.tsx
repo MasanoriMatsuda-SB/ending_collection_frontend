@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 
 export default function ItemDetailEdit() {
     const params = useParams();
-    const itemId = params.id;
+    // const itemId = params.id;
 
     return (
         // <div className="p-4">
