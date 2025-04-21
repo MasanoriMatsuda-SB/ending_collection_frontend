@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext'
 import Button from '@/components/Button'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, FormEvent } from 'react'
+import QRCode from 'react-qr-code'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -31,7 +32,7 @@ export default function InvitePage() {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
-  // ── 招待承認用エフェクト（必ず同じ位置で呼び出す） ──
+  // ── 招待承認用エフェクト ──
   useEffect(() => {
     if (!user || !token || acceptStatus !== 'idle') return
     setAcceptStatus('loading')
@@ -90,7 +91,6 @@ export default function InvitePage() {
         }
         localStorage.setItem('token', data.access_token)
         refreshUser()
-        // 招待URL経由なら同じパラメータ付きでリロードして承認フェーズに
         if (token) {
           router.replace(`/invite?token=${encodeURIComponent(token)}`)
         } else {
@@ -198,7 +198,8 @@ export default function InvitePage() {
         return
       }
       const { token: newToken } = await res.json()
-      setInviteLink(`${window.location.origin}/invite?token=${newToken}`)
+      const link = `${window.location.origin}/invite?token=${newToken}`
+      setInviteLink(link)
     } catch {
       setCreateError('招待リンクの作成に失敗しました')
     } finally {
@@ -208,8 +209,7 @@ export default function InvitePage() {
 
   const copyToClipboard = (text: string) => {
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text)
-        .catch(() => alert('コピーに失敗しました。手動でコピーしてください。'))
+      navigator.clipboard.writeText(text).catch(() => alert('コピーに失敗しました。手動でコピーしてください。'))
     } else {
       const ta = document.createElement('textarea')
       ta.value = text
@@ -248,20 +248,28 @@ export default function InvitePage() {
       )}
 
       {inviteLink && (
-        <div className="mt-6 w-full max-w-md space-y-4">
+        <div className="mt-6 w-full max-w-md space-y-4 flex flex-col">
           <input
             type="text"
             readOnly
             value={inviteLink}
             className="w-full px-3 py-2 border rounded"
           />
+
+          {/* ←ここにQRコードを挿入 */}
+          <div className="flex justify-center">
+            <QRCode value={inviteLink} size={160} />
+          </div>
+
           <button
             onClick={() => copyToClipboard(inviteLink)}
-            className="flex items-center justify-center w-full max-w-md py-3 px-4 rounded-full text-white font-bold bg-[#7B6224] hover:bg-[#A8956F] transition"
+            className="flex items-center justify-center w-full py-3 px-4 rounded-full text-white font-bold bg-[#7B6224] hover:bg-[#A8956F] transition"
           >
             リンクをコピー
           </button>
+
           <p className="text-center text-gray-700">またはSNSで招待リンクを送る</p>
+
           <div className="flex justify-center">
             <button
               onClick={() => {
