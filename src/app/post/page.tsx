@@ -29,6 +29,7 @@ interface BatchItem {
   condition: string;
   memo: string;
   selected: boolean;
+  selectedCategories: number[];  // 追加：階層選択用の配列
 }
 
 // バッチ検出結果の型
@@ -52,7 +53,8 @@ function PostPageContent() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [itemName, setItemName] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('');               // 最終選択カテゴリID を文字列で保持
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]); // 階層ごとの選択ID
   const [condition, setCondition] = useState('');
   const [memo, setMemo] = useState('');
   const [error, setError] = useState('');
@@ -94,6 +96,22 @@ function PostPageContent() {
     }
     fetchCategories();
   }, []);
+
+  // 階層型セレクト用ハンドラ（シングル用）
+  const handleCategorySelect = (level: number, id: number) => {
+    const next = selectedCategories.slice(0, level);
+    next[level] = id;
+    setSelectedCategories(next);
+    setCategory(String(id));
+  };
+
+  // セレクトすべき親IDの配列を組み立て（シングル用）
+  const parentIds: (number | null)[] = [null];
+  selectedCategories.forEach(id => parentIds.push(id));
+  // 各親に子カテゴリが無ければ、そのレベル以降は表示しない
+  const displayParents = parentIds.filter((parentId, idx) =>
+    idx === 0 || categories.some(cat => cat.parent_category_id === parentId)
+  );
 
   const renderCategoryOptions = (parentId: number | null = null, level = 0): JSX.Element[] => {
     return categories.flatMap(cat =>
@@ -193,6 +211,7 @@ function PostPageContent() {
         condition: '',
         memo: '',
         selected: false,
+        selectedCategories: [],  // 初期化
       }));
       setBatchItems(items);
       items.forEach((it, i) => analyzeBatchItemName(i, it.cropImageUrl));
@@ -210,7 +229,7 @@ function PostPageContent() {
   };
 
   // バッチアイテム更新
-  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: string | boolean) => {
+  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: any) => {
     setBatchItems(bs => bs.map((b, i) => (i === idx ? { ...b, [field]: val } : b)));
   };
 
@@ -293,6 +312,7 @@ function PostPageContent() {
     setCategory('');
     setCondition('');
     setMemo('');
+    setSelectedCategories([]);
   };
 
   return (
@@ -377,15 +397,26 @@ function PostPageContent() {
               {/* カテゴリー */}
               <div>
                 <label className="block text-sm font-medium text-gray-900">カテゴリー</label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  required
-                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
-                >
-                  <option value="">選択してください</option>
-                  {renderCategoryOptions()}
-                </select>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {displayParents.map((parentId, level) => {
+                    const opts = categories.filter(c => c.parent_category_id === parentId);
+                    return (
+                      <select
+                        key={level}
+                        value={selectedCategories[level] || ''}
+                        onChange={e => handleCategorySelect(level, Number(e.target.value))}
+                        className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      >
+                        <option value="">選択してください</option>
+                        {opts.map(c => (
+                          <option key={c.category_id} value={c.category_id}>
+                            {c.category_name}
+                          </option>
+                        ))}
+                      </select>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 状態 */}
@@ -509,21 +540,47 @@ function PostPageContent() {
                       </div>
                       <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-900">カテゴリー</label>
-                        <select
-                          value={item.category}
-                          onChange={e => updateBatchItemField(index, 'category', e.target.value)}
-                          className="w-full mt-1 px-3 py-2 border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus;border-green-500"
-                        >
-                          <option value="">選択してください</option>
-                          {renderCategoryOptions()}
-                        </select>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {(() => {
+                            // 親IDの配列を組み立て（バッチ用）
+                            const parentIdsItem: (number | null)[] = [null];
+                            item.selectedCategories.forEach(id => parentIdsItem.push(id));
+                            const displayParentsItem = parentIdsItem.filter((parentId, idx) =>
+                              idx === 0 || categories.some(cat => cat.parent_category_id === parentId)
+                            );
+                            return displayParentsItem.map((parentId, level) => {
+                              const opts = categories.filter(c => c.parent_category_id === parentId);
+                              return (
+                                <select
+                                  key={level}
+                                  value={item.selectedCategories[level] || ''}
+                                  onChange={e => {
+                                    const id = Number(e.target.value);
+                                    const next = item.selectedCategories.slice(0, level);
+                                    next[level] = id;
+                                    updateBatchItemField(index, 'selectedCategories', next);
+                                    updateBatchItemField(index, 'category', String(id));
+                                  }}
+                                  className="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                >
+                                  <option value="">選択してください</option>
+                                  {opts.map(c => (
+                                    <option key={c.category_id} value={c.category_id}>
+                                      {c.category_name}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                       <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-900">状態</label>
                         <select
                           value={item.condition}
                           onChange={e => updateBatchItemField(index, 'condition', e.target.value)}
-                          className="w-full mt-1 px-3 py-2	border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
                         >
                           <option value="">選択してください</option>
                           <option value="S">S：新品、未使用</option>
@@ -534,11 +591,11 @@ function PostPageContent() {
                         </select>
                       </div>
                       <div className="mb-2">
-                        <label className="block	text-sm font-medium text-gray-900">メモ</label>
+                        <label className="block text-sm font-medium text-gray-900">メモ</label>
                         <textarea
                           value={item.memo}
                           onChange={e => updateBatchItemField(index, 'memo', e.target.value)}
-                          className="w-full mt-1 px-3 py-2	border	border-gray-300 rounded focus:outline-none focus:ring-green-500 focus;border-green-500"
+                          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-green-500 focus:border-green-500"
                           rows={3}
                           placeholder="説明を入力してください"
                         />
