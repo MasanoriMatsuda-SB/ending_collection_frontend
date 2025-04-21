@@ -24,17 +24,13 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
   }, []);
 
   useEffect(() => {
-    // モーダル開閉でカメラコンテキスト更新＆ボディスクロール無効化
     setIsCameraOpen(isOpen);
     if (isOpen) {
       updateVh();
       window.addEventListener('resize', updateVh);
-
-      // 背景スクロール防止
       document.body.style.overflow = 'hidden';
     }
     return () => {
-      // クリーンアップ：イベント解除・スクロール復活・コンテキストリセット
       window.removeEventListener('resize', updateVh);
       document.body.style.overflow = '';
       setIsCameraOpen(false);
@@ -64,12 +60,7 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div
-        className="
-          bg-white rounded-lg shadow-lg
-          w-full max-w-xl
-          flex flex-col overflow-hidden
-        "
-        // 高さを動的 vh で指定
+        className="bg-white rounded-lg shadow-lg w-full max-w-xl flex flex-col overflow-hidden"
         style={{ height: 'calc(var(--vh) * 90)' }}
       >
         {/* ビデオ領域 */}
@@ -78,7 +69,7 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             videoConstraints={{
               width: 1280,
               height: 720,
@@ -87,8 +78,8 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
           />
         </div>
 
-        {/* ボタン領域（画面下部に固定） */}
-        <div className="flex justify-center gap-4 p-4 border-t border-gray-200 bg-white sticky bottom-0 pb-[env(safe-area-inset-bottom)]">
+        {/* ボタン領域（画面下部に固定・中央揃え） */}
+        <div className="flex items-center justify-center gap-4 p-4 border-t border-gray-200 bg-white sticky bottom-0 pb-[env(safe-area-inset-bottom)]">
           <button
             onClick={capture}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
