@@ -17,17 +17,26 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
 
   useEffect(() => {
     setIsCameraOpen(isOpen);
-    return () => setIsCameraOpen(false);
+    if (isOpen) {
+      // iPad/Safari でレイアウト再計算を強制
+      window.dispatchEvent(new Event('resize'));
+    }
+    return () => {
+      setIsCameraOpen(false);
+    };
   }, [isOpen, setIsCameraOpen]);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
+
     const byteString = atob(imageSrc.split(',')[1]);
     const mimeString = imageSrc.split(',')[0].split(':')[1].split(';')[0];
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
     const file = new File([ab], 'capture.jpg', { type: mimeString });
     onCapture(file);
   }, [onCapture]);
@@ -36,15 +45,9 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div
-        className="
-          bg-white rounded-lg shadow-lg 
-          w-full max-w-xl 
-          max-h-[90vh] flex flex-col overflow-hidden
-        "
-      >
-        {/* video area が伸び縮みする */}
-        <div className="flex-1 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+        {/* ビデオ領域 */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           <Webcam
             audio={false}
             ref={webcamRef}
@@ -54,18 +57,8 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
           />
         </div>
 
-        {/* ボタンは常に画面内下部に固定 */}
-        <div
-          className="
-            flex justify-center gap-4 
-            p-4 
-            border-t border-gray-200 
-            bg-white 
-            sticky bottom-0 
-            /* iOS Safe Area 対応 */
-            pb-[env(safe-area-inset-bottom)]
-          "
-        >
+        {/* ボタン領域（常に下部に固定） */}
+        <div className="flex justify-center gap-4 p-4 border-t border-gray-200 bg-white sticky bottom-0 pb-[env(safe-area-inset-bottom)]">
           <button
             onClick={capture}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
