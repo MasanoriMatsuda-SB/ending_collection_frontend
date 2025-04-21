@@ -113,18 +113,18 @@ function PostPageContent() {
     idx === 0 || categories.some(cat => cat.parent_category_id === parentId)
   );
 
-  const renderCategoryOptions = (parentId: number | null = null, level = 0): JSX.Element[] => {
-    return categories.flatMap(cat =>
-      cat.parent_category_id === parentId
-        ? [
-            <option key={cat.category_id} value={cat.category_id}>
-              {`${'　'.repeat(level)}${cat.category_name}`}
-            </option>,
-            ...renderCategoryOptions(cat.category_id, level + 1),
-          ]
-        : []
-    );
-  };
+  // const renderCategoryOptions = (parentId: number | null = null, level = 0): JSX.Element[] => {
+  //   return categories.flatMap(cat =>
+  //     cat.parent_category_id === parentId
+  //       ? [
+  //           <option key={cat.category_id} value={cat.category_id}>
+  //             {`${'　'.repeat(level)}${cat.category_name}`}
+  //           </option>,
+  //           ...renderCategoryOptions(cat.category_id, level + 1),
+  //         ]
+  //       : []
+  //   );
+  // };
 
   // 画像解析（共通）
   const handleImageSelect = async (file: File) => {
@@ -229,7 +229,7 @@ function PostPageContent() {
   };
 
   // バッチアイテム更新
-  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: any) => {
+  const updateBatchItemField = (idx: number, field: keyof BatchItem, val: string | boolean | number[]) => {
     setBatchItems(bs => bs.map((b, i) => (i === idx ? { ...b, [field]: val } : b)));
   };
 
