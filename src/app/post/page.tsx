@@ -1,7 +1,7 @@
 // src/app/post/page.tsx
 'use client';
 
-import { useState, useEffect, JSX } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CameraModal from './components/CameraModal';
 import { jwtDecode } from 'jwt-decode';
