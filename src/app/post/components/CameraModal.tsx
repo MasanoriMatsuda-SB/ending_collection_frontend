@@ -15,23 +15,41 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
   const webcamRef = useRef<Webcam>(null);
   const { setIsCameraOpen } = useCamera();
 
+  // CSS変数--vhをセットする関数（InnerHeight に基づく）
+  const updateVh = useCallback(() => {
+    document.documentElement.style.setProperty(
+      '--vh',
+      `${window.innerHeight * 0.01}px`
+    );
+  }, []);
+
   useEffect(() => {
+    // モーダル開閉でカメラコンテキスト更新＆ボディスクロール無効化
     setIsCameraOpen(isOpen);
     if (isOpen) {
-      // iPad/Safari でレイアウト再計算を強制
-      window.dispatchEvent(new Event('resize'));
+      updateVh();
+      window.addEventListener('resize', updateVh);
+
+      // 背景スクロール防止
+      document.body.style.overflow = 'hidden';
     }
     return () => {
+      // クリーンアップ：イベント解除・スクロール復活・コンテキストリセット
+      window.removeEventListener('resize', updateVh);
+      document.body.style.overflow = '';
       setIsCameraOpen(false);
     };
-  }, [isOpen, setIsCameraOpen]);
+  }, [isOpen, setIsCameraOpen, updateVh]);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
 
     const byteString = atob(imageSrc.split(',')[1]);
-    const mimeString = imageSrc.split(',')[0].split(':')[1].split(';')[0];
+    const mimeString = imageSrc
+      .split(',')[0]
+      .split(':')[1]
+      .split(';')[0];
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteString.length; i++) {
@@ -45,7 +63,15 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div
+        className="
+          bg-white rounded-lg shadow-lg
+          w-full max-w-xl
+          flex flex-col overflow-hidden
+        "
+        // 高さを動的 vh で指定
+        style={{ height: 'calc(var(--vh) * 90)' }}
+      >
         {/* ビデオ領域 */}
         <div className="flex-1 min-h-0 overflow-hidden">
           <Webcam
@@ -53,11 +79,15 @@ export default function CameraModal({ isOpen, onClose, onCapture }: CameraModalP
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             className="w-full h-full object-cover"
-            videoConstraints={{ width: 1280, height: 720, facingMode: 'environment' }}
+            videoConstraints={{
+              width: 1280,
+              height: 720,
+              facingMode: 'environment',
+            }}
           />
         </div>
 
-        {/* ボタン領域（常に下部に固定） */}
+        {/* ボタン領域（画面下部に固定） */}
         <div className="flex justify-center gap-4 p-4 border-t border-gray-200 bg-white sticky bottom-0 pb-[env(safe-area-inset-bottom)]">
           <button
             onClick={capture}
