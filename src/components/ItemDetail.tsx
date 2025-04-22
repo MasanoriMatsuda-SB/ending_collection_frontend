@@ -367,7 +367,12 @@ export default function ItemDetail({ itemId }: Props) {
                             </div>
                             <div className="flex justify-center mt-6 mb-6">
                                 <button
-                                        className="w-full max-w-[600px] mt-6 mb-6 py-3 px-4 rounded-full text-white font-bold transition bg-[#7B6224] hover:bg-[#A8956F]"
+                                    className="w-full max-w-[600px] mt-6 mb-6 py-3 px-4 rounded-full text-white font-bold transition bg-[#7B6224] hover:bg-[#A8956F]"
+                                    onClick={() => {
+                                        const keyword = encodeURIComponent(item.item_name);
+                                        const url = `https://jp.mercari.com/search?keyword=${keyword}`;
+                                        window.open(url, "_blank");
+                                    }}
                                 >
                                     メルカリで出品する
                                 </button>
