@@ -173,7 +173,8 @@ export default function ItemPage({ params }: PageProps) {
                 <img
                   src={images[0].image_url || "/no-image.svg"}
                   alt="item"
-                  className="max-h-[60px] w-auto rounded-[10px] shadow"
+                  // className="max-h-[60px] w-auto rounded-[10px] shadow"
+                  className="max-h-[36px] sm:max-h-[60px] w-auto rounded-[10px] shadow"
                 />
               )}
               <span className="text-lg font-bold truncate max-w-[220px]">{itemName}</span>
@@ -197,13 +198,15 @@ export default function ItemPage({ params }: PageProps) {
             <div className="flex justify-around">
               <button
                 onClick={() => setTab("detail")}
-                className="text-center px-12 py-0 font-bold text-[22px] text-gray-500"
+                // className="text-center px-12 py-0 font-bold text-[22px] text-gray-500"
+                className="text-center font-bold text-[18px] sm:text-[22px] px-6 sm:px-12 py-0 text-gray-500"
               >
                 詳細
               </button>
               <button
                 onClick={() => setTab("chat")}
-                className="text-center px-4 py-0 font-bold text-[22px] text-[#000000]"
+                // className="text-center px-4 py-0 font-bold text-[22px] text-[#000000]"
+                className="text-center font-bold text-[18px] sm:text-[22px] px-6 sm:px-12 py-0 text-[#000000]"
               >
                 メッセージ
               </button>
@@ -299,7 +302,7 @@ export default function ItemPage({ params }: PageProps) {
               <p className="mb-4">このアイテムのチャットはまだ開始されていません。</p>
               <button
                 onClick={handleCreateThread}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-stone-500 text-white rounded hover:bg-stone-600"
               >
                 チャットを開始
               </button>

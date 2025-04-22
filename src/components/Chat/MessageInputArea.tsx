@@ -92,11 +92,9 @@ export default function MessageInputArea({
         {/* 送信ボタン：スマホではコンパクトに */}
         <button
           onClick={sendMessage}
-          // className="bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl disabled:opacity-50 sm:text-sm sm:px-3 sm:py-1"
           className={`bg-[#7B6224] text-white text-[13px] px-2 py-1.5 rounded-xl 
             sm:text-sm sm:px-3 sm:py-1
             ${isSending ? 'opacity-50 cursor-wait' : ''}`}
-          // disabled={!input && !file}
           disabled={isSending || (!input && !file)}
         >
           {isSending ? "送信中…" : "送信"}

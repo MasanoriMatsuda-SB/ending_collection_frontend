@@ -66,6 +66,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                     alt={label}
                     width={60}
                     height={60}
+                    className="w-[48px] h-[48px] sm:w-[60px] sm:h-[60px]"
                   />
                 </div>
               ))}
