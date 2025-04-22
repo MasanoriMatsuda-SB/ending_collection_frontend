@@ -68,15 +68,38 @@ export default function ItemDetail({ itemId }: Props) {
                 }
                 // フロント内でmarket priceをランダムに作成してヒストグラムへ start //
                 const round100 = (n: number) => Math.round(n / 100) * 100;
+                // const generatePrices = (base: number, shape: string): number[] => {
+                //     const sigma = base * 0.2;
+                //     let mu = base;
+                //     if (shape === "left") mu *= 0.9;
+                //     else if (shape === "right") mu *= 1.1;
+                //     return Array.from({ length: 48 }, () =>
+                //         Math.max(round100(mu + sigma * (Math.random() * 2 - 1)), 100)
+                //     );
+                // };
+
+
+                
+                // 正規分布に従う乱数を生成（Box-Muller法）
+                const randn_bm = () => {
+                    let u = 0, v = 0;
+                    while (u === 0) u = Math.random(); 
+                    while (v === 0) v = Math.random();
+                    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+                };
+
                 const generatePrices = (base: number, shape: string): number[] => {
                     const sigma = base * 0.2;
                     let mu = base;
                     if (shape === "left") mu *= 0.9;
                     else if (shape === "right") mu *= 1.1;
-                    return Array.from({ length: 48 }, () =>
-                        Math.max(round100(mu + sigma * (Math.random() * 2 - 1)), 100)
-                    );
+
+                    return Array.from({ length: 48 }, () => {
+                        const price = mu + sigma * randn_bm(); 
+                        return Math.max(round100(price), 100); 
+                    });
                 };
+
                 const baseRaw = Math.floor(Math.random() * (1000000 - 1000 + 1)) + 1000;
                 const base = Math.floor(baseRaw / 100) * 100;
                 const baseMap = {
