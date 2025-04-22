@@ -36,25 +36,10 @@ type HistogramBin = {
     count: number;
 };
 
-// フロント内でmarket priceをランダムに作成してヒストグラムへ start //
-const randn_bm = () => {
-    let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-};
-
-// const generateNormalPrices = (mean: number, std: number, count: number): number[] => {
-//     const round100 = (n: number) => Math.round(n / 100) * 100;
-//     return Array.from({ length: count }, () =>
-//         Math.max(round100(mean + std * randn_bm()), 100)
-//     );
-// };
-// フロント内でmarket priceをランダムに作成してヒストグラムへ end //
-
 export default function ItemDetail({ itemId }: Props) {
     const [item, setItem] = useState<ItemData | null>(null);
-    const [_, setReferenceItem] = useState<ReferenceItem | null>(null);
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    const [referenceItem, setReferenceItem] = useState<ReferenceItem | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showEstimate, setShowEstimate] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
