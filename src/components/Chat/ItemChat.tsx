@@ -328,8 +328,10 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="fixed bottom-[106px] left-0 right-0 z-20 flex justify-center">
-        <div className="w-full max-w-[710px] bg-white px-4 pt-0 pb-4">
+      {/* <div className="fixed bottom-[106px] left-0 right-0 z-20 flex justify-center"> */}
+      <div className="fixed bottom-[80px] sm:bottom-[106px] left-0 right-0 z-20 flex justify-center">
+        {/* <div className="w-full max-w-[710px] bg-white px-4 pt-0 pb-4"> */}
+        <div className="w-full max-w-[710px] bg-white px-4 pt-0 pb-3 sm:pb-4">
           {/* コンテキストメニュー（右クリック・長押し） */}
           <ContextMenu
             contextMenu={contextMenu}
@@ -365,7 +367,7 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
           
 
           {/* 要約・検索ボタン （RAG用）*/}
-          <div className="flex gap-2 mt-5 ml-1">
+          <div className="flex gap-2 mt-2 ml-1">
             <button
               onClick={() => setShowSummary(true)}
               className="px-3 py-1 text-sm bg-stone-400 text-white rounded hover:bg-stone-500"
