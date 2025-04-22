@@ -44,17 +44,17 @@ const randn_bm = () => {
     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 };
 
-const generateNormalPrices = (mean: number, std: number, count: number): number[] => {
-    const round100 = (n: number) => Math.round(n / 100) * 100;
-    return Array.from({ length: count }, () =>
-        Math.max(round100(mean + std * randn_bm()), 100)
-    );
-};
+// const generateNormalPrices = (mean: number, std: number, count: number): number[] => {
+//     const round100 = (n: number) => Math.round(n / 100) * 100;
+//     return Array.from({ length: count }, () =>
+//         Math.max(round100(mean + std * randn_bm()), 100)
+//     );
+// };
 // フロント内でmarket priceをランダムに作成してヒストグラムへ end //
 
 export default function ItemDetail({ itemId }: Props) {
     const [item, setItem] = useState<ItemData | null>(null);
-    const [referenceItem, setReferenceItem] = useState<ReferenceItem | null>(null);
+    const [_, setReferenceItem] = useState<ReferenceItem | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showEstimate, setShowEstimate] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
