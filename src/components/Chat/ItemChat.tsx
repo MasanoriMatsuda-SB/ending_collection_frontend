@@ -267,8 +267,8 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
 
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] overflow-y-auto p-4">
-      <div className="flex-1 overflow-y-auto space-y-2">
+    <div className="absolute top-[190px] bottom-[226px] left-0 right-0 overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-y-auto px-4">
         {messages.map((msg, index) => {
           const replyTo = msg.parent_message_id
             ? messages.find((m) => m.message_id === msg.parent_message_id)
@@ -328,66 +328,69 @@ export default function ItemChat({ itemId, userId }: ItemChatProps) {
         <div ref={bottomRef} />
       </div>
 
-      {/* コンテキストメニュー（右クリック・長押し） */}
-      <ContextMenu
-        contextMenu={contextMenu}
-        selectedMessage={selectedMessage}
-        onClose={() => setContextMenu(null)}
-        onReply={() => {
-          if (selectedMessage) {
-            setReplyToMessage(selectedMessage);
-          }
-        }}
-        onDelete={() => {
-          if (selectedMessage) {
-            handleDeleteMessage(selectedMessage.message_id);
-          }
-        }}
-      />
-      
-      {/* メッセージ入力エリア */}
-      <MessageInputArea
-        input={input}
-        setInput={setInput}
-        file={file}
-        setFile={setFile}
-        replyToMessage={replyToMessage}
-        setReplyToMessage={setReplyToMessage}
-        sendMessage={sendMessage}
-        currentUserId={currentUserId}
-        itemId={itemId}
-        socket={socket}
-        fetchMessages={fetchMessages}
-        isSending={isSending}
-      />
-      
+      <div className="fixed bottom-[106px] left-0 right-0 z-20 flex justify-center">
+        <div className="w-full max-w-[710px] bg-white px-4 pt-0 pb-4">
+          {/* コンテキストメニュー（右クリック・長押し） */}
+          <ContextMenu
+            contextMenu={contextMenu}
+            selectedMessage={selectedMessage}
+            onClose={() => setContextMenu(null)}
+            onReply={() => {
+              if (selectedMessage) {
+                setReplyToMessage(selectedMessage);
+              }
+            }}
+            onDelete={() => {
+              if (selectedMessage) {
+                handleDeleteMessage(selectedMessage.message_id);
+              }
+            }}
+          />
+          
+          {/* メッセージ入力エリア */}
+          <MessageInputArea
+            input={input}
+            setInput={setInput}
+            file={file}
+            setFile={setFile}
+            replyToMessage={replyToMessage}
+            setReplyToMessage={setReplyToMessage}
+            sendMessage={sendMessage}
+            currentUserId={currentUserId}
+            itemId={itemId}
+            socket={socket}
+            fetchMessages={fetchMessages}
+            isSending={isSending}
+          />
+          
 
-      {/* 要約・検索ボタン （RAG用）*/}
-      <div className="flex gap-2 mt-5 ml-1">
-        <button
-          onClick={() => setShowSummary(true)}
-          className="px-3 py-1 text-sm bg-stone-400 text-white rounded hover:bg-stone-500"
-        >
-          要約
-        </button>
-        <button
-          onClick={() => setShowSearch(true)}
-          className="px-3 py-1 text-sm bg-neutral-500 text-white rounded hover:bg-neutral-600"
-        >
-          検索
-        </button>
+          {/* 要約・検索ボタン （RAG用）*/}
+          <div className="flex gap-2 mt-5 ml-1">
+            <button
+              onClick={() => setShowSummary(true)}
+              className="px-3 py-1 text-sm bg-stone-400 text-white rounded hover:bg-stone-500"
+            >
+              要約
+            </button>
+            <button
+              onClick={() => setShowSearch(true)}
+              className="px-3 py-1 text-sm bg-neutral-500 text-white rounded hover:bg-neutral-600"
+            >
+              検索
+            </button>
+          </div>
+          
+          {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
+          {/* <DevUserSwitcher
+            currentUserId={currentUserId}
+            setCurrentUserId={setCurrentUserId}
+          /> */}
+
+          {/* 要約・検索ポップアップ */}
+          {showSummary && <SummaryPopup onClose={() => setShowSummary(false)} itemId={itemId} />}
+          {showSearch && <SearchPopup onClose={() => setShowSearch(false)} itemId={itemId} />}
+        </div>
       </div>
-      
-      {/* 開発用ユーザー切り替えUI（最終的に要削除。(1)import DevUserSwitcher、(2)component/DevUserSwitcheの削除も忘れずに！！） */}
-      {/* <DevUserSwitcher
-        currentUserId={currentUserId}
-        setCurrentUserId={setCurrentUserId}
-      /> */}
-
-      {/* 要約・検索ポップアップ */}
-      {showSummary && <SummaryPopup onClose={() => setShowSummary(false)} itemId={itemId} />}
-      {showSearch && <SearchPopup onClose={() => setShowSearch(false)} itemId={itemId} />}
-
     </div>
   );
 }
