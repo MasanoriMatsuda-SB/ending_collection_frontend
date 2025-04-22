@@ -53,7 +53,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* カメラ起動中はフッター非表示 */}
         {!isCameraOpen && (
-          <footer className="sticky bottom-0 w-full h-[106px] bg-white border-t border-[#F2F2F2] z-50">
+          // <footer className="sticky bottom-0 w-full h-[106px] bg-white border-t border-[#F2F2F2] z-50">
+          <footer className="sticky bottom-1 w-full h-[84px] sm:h-[106px] bg-white border-t border-[#F2F2F2] z-50">
             <div className="absolute top-1.5 left-0 w-full flex justify-around px-0">
               {tabs.map(({ key, label, on, off, path }) => (
                 <div
