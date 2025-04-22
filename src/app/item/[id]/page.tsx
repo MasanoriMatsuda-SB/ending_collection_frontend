@@ -297,7 +297,8 @@ export default function ItemPage({ params }: PageProps) {
         threadExists === null ? (
           <p className="p-4">読み込み中...</p>
         ) : threadExists === false ? (
-          <div className="flex items-center justify-center">
+          // <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
             <div className="text-center">
               <p className="mb-4">このアイテムのチャットはまだ開始されていません。</p>
               <button
