@@ -51,8 +51,9 @@ export default function ItemDetail({ itemId }: Props) {
     const [medianPrice, setMedianPrice] = useState<number | null>(null);
     const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
     const [histogramData, setHistogramData] = useState<HistogramBin[]>([]);
-    const [conditionPriceData, setConditionPriceData] = useState<Record<string, number[]>>({});  // フロント内でmarket priceをランダムに作成してヒストグラムへ
+    const [conditionPriceData, setConditionPriceData] = useState<Record<string, number[]>>({});
 
+    // アイテムと参照アイテム取得
     useEffect(() => {
         const fetchItemAndRef = async () => {
             try {
@@ -61,47 +62,38 @@ export default function ItemDetail({ itemId }: Props) {
                 const itemData = await res.json();
                 setItem(itemData);
 
+                // 初期フィルタをアイテムの状態に合わせてセット
+                setConditionFilter(itemData.condition_rank);
+
                 if (itemData.ref_item_id) {
                     const refRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reference-items/${itemData.ref_item_id}`);
                     const refData = refRes.ok ? await refRes.json() : null;
                     setReferenceItem(refData);
                 }
-                // フロント内でmarket priceをランダムに作成してヒストグラムへ start //
+                // 市場価格データのランダム生成
                 const round100 = (n: number) => Math.round(n / 100) * 100;
-                // const generatePrices = (base: number, shape: string): number[] => {
-                //     const sigma = base * 0.2;
-                //     let mu = base;
-                //     if (shape === "left") mu *= 0.9;
-                //     else if (shape === "right") mu *= 1.1;
-                //     return Array.from({ length: 48 }, () =>
-                //         Math.max(round100(mu + sigma * (Math.random() * 2 - 1)), 100)
-                //     );
-                // };
-
-
-                
-                // 正規分布に従う乱数を生成（Box-Muller法）
                 const randn_bm = () => {
                     let u = 0, v = 0;
-                    while (u === 0) u = Math.random(); 
+                    while (u === 0) u = Math.random();
                     while (v === 0) v = Math.random();
                     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
                 };
-
                 const generatePrices = (base: number, shape: string): number[] => {
-                    const sigma = base * 0.2;
+                    // 価格幅 2,000 円の 99.7% 区間（±3σ ≒ ±1,000 円）に収まるようσを固定
+                    const sigma = 2000 / 6;  
                     let mu = base;
                     if (shape === "left") mu *= 0.9;
                     else if (shape === "right") mu *= 1.1;
-
+                  
                     return Array.from({ length: 48 }, () => {
-                        const price = mu + sigma * randn_bm(); 
-                        return Math.max(round100(price), 100); 
+                      const price = mu + sigma * randn_bm();
+                      return Math.max(round100(price), 100);
                     });
-                };
-
-                const baseRaw = Math.floor(Math.random() * (1000000 - 1000 + 1)) + 1000;
-                const base = Math.floor(baseRaw / 100) * 100;
+                  };
+                const lowerRaw = Math.floor(Math.random() * (100000 - 1000 + 1)) + 1000;
+                const baseLower = Math.floor(lowerRaw / 100) * 100;
+                const baseUpper = baseLower + 2000;
+                const base = Math.floor((Math.random() * (baseUpper - baseLower) + baseLower) / 100) * 100;
                 const baseMap = {
                     S: round100(base * 1.0),
                     A: round100(base * 0.7),
@@ -122,112 +114,52 @@ export default function ItemDetail({ itemId }: Props) {
                     newData[key] = generatePrices(baseMap[key], shapeMap[key]);
                 }
                 setConditionPriceData(newData);
-                // フロント内でmarket priceをランダムに作成してヒストグラムへ end //
             } catch (err) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("不明なエラーが発生しました");
-                }
+                if (err instanceof Error) setError(err.message);
+                else setError("不明なエラーが発生しました");
             }
         };
         fetchItemAndRef();
     }, [itemId]);
 
+    // itemId変更時は表示モードとデータをリセット（フィルタは変更しない）
     useEffect(() => {
         setShowEstimate(false);
         setMenuOpen(false);
-        setConditionFilter("全て");
         setMarketPrices([]);
         setMedianPrice(null);
         setPriceRange(null);
         setHistogramData([]);
     }, [itemId]);
 
-    // DBからmarket priceを取得してヒストグラムへ start//
-    // useEffect(() => {
-    //     if (!item?.ref_item_id || !showEstimate) return;
-
-    //     const fetchMarketPrices = async () => {
-    //         const url = `${process.env.NEXT_PUBLIC_API_URL}/reference-market-items?ref_item_id=${item.ref_item_id}&condition_rank=${conditionFilter}`;
-    //         const res = await fetch(url);
-    //         const data = await res.json();
-    //         const prices = data.market_prices;
-
-    //         if (prices.length === 0) {
-    //             setMarketPrices([]);
-    //             setMedianPrice(null);
-    //             setPriceRange(null);
-    //             setHistogramData([]);
-    //             return;
-    //         }
-
-    //         // 外れ値除去（上下3%カット）
-    //         const sorted = [...prices].sort((a, b) => a - b);
-    //         const cut = Math.floor(prices.length * 0.03);
-    //         const trimmed = sorted.slice(cut, prices.length - cut);
-
-    //         const mid = Math.floor(trimmed.length / 2);
-    //         const median = trimmed.length % 2 === 0
-    //             ? Math.round((trimmed[mid - 1] + trimmed[mid]) / 2)
-    //             : trimmed[mid];
-
-    //         const range: [number, number] = [Math.min(...trimmed), Math.max(...trimmed)];
-
-    //         // ヒストグラム作成
-    //         const bins: Record<string, number> = {};
-    //         const binSize = 500;
-    //         for (const price of trimmed) {
-    //             const bin = Math.floor(price / binSize) * binSize;
-    //             bins[bin] = (bins[bin] || 0) + 1;
-    //         }
-    //         const hist = Object.entries(bins).map(([k, v]) => ({
-    //             price: Number(k),
-    //             count: v,
-    //         })).sort((a, b) => a.price - b.price);
-
-    //         setMarketPrices(prices);
-    //         setMedianPrice(median);
-    //         setPriceRange(range);
-    //         setHistogramData(hist);
-    //     };
-
-    //     fetchMarketPrices();
-    // }, [item?.ref_item_id, showEstimate, conditionFilter]);
-    // DBからmarket priceを取得してヒストグラムへ end//
-
-    // フロント内でmarket priceをランダムに作成してヒストグラムへ start //
+    // ヒストグラム用データ再計算
     useEffect(() => {
         if (!showEstimate || Object.keys(conditionPriceData).length === 0) return;
 
-        const prices = conditionFilter === "全て"
-            ? Object.values(conditionPriceData).flat()
-            : conditionPriceData[conditionFilter] ?? [];
+        const prices =
+            conditionFilter === "全て"
+                ? Object.values(conditionPriceData).flat()
+                : conditionPriceData[conditionFilter] ?? [];
 
         const sorted = [...prices].sort((a, b) => a - b);
         const trimmed = sorted;
-
         const mid = Math.floor(trimmed.length / 2);
         const median = trimmed.length % 2 === 0
             ? Math.round((trimmed[mid - 1] + trimmed[mid]) / 2)
             : trimmed[mid];
-
         const range: [number, number] = [
             Math.round(Math.min(...trimmed) / 100) * 100,
             Math.round(Math.max(...trimmed) / 100) * 100,
         ];
-
         const bins: Record<number, number> = {};
-        const binSize = 500;
+        const binSize = 100;
         for (const price of trimmed) {
             const bin = Math.floor(price / binSize) * binSize;
             bins[bin] = (bins[bin] || 0) + 1;
         }
-
-        const hist = Object.entries(bins).map(([k, v]) => ({
-            price: Number(k),
-            count: v,
-        })).sort((a, b) => a.price - b.price);
+        const hist = Object.entries(bins)
+            .map(([k, v]) => ({ price: Number(k), count: v }))
+            .sort((a, b) => a.price - b.price);
 
         setMarketPrices(trimmed);
         setMedianPrice(median);
